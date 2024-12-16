@@ -22,7 +22,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 void WebSocketInit () {
   webSocket.begin(ADDR, PORT, URL);
   webSocket.onEvent(webSocketEvent);
-  webSocket.setReconnectInterval(ReconnectInterval);
+  //webSocket.setReconnectInterval(ReconnectInterval);
 }
 
 void WifiInit () {
