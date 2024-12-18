@@ -11,11 +11,6 @@ void WebSocket( void * parameter) {
     webSocket.loop();
     if (webSocket.isConnected()) {
       R = 0; G = 140; B = 0;
-      /*if (millis() > Timer) {
-        Timer = millis() + 15000;
-        SendTestPack ();
-      }*/
-
     } else {
       R = 140; G = 0; B = 0;
     }
@@ -29,7 +24,7 @@ void SendTestPack ()
 
   Packet.Packet     = START;
   Packet.ChipID     = ESP.getEfuseMac();
-  Packet.DeviceType = TEST;
+  Packet.DeviceType = TELEMETRY;
 
   //Serial.println(ESP.getEfuseMac());
 
@@ -42,6 +37,7 @@ void SendTestPack ()
 
   webSocket.sendBIN(Data, DataSize);   // Отправялю пакет на сервер
 }
+
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
@@ -63,6 +59,38 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // О�
         Serial.printf("Received message: %s\n", payload);
         break;
       }
+
+      case WStype_BIN: // обрабатываем бинарные сообщения
+      { 
+        Serial.println((uint8_t)type);
+        Serial.print("Received binary data, length: ");
+        Serial.println(length);
+        if (length == 2) {
+          PacketUID receivedPacket;
+          memcpy(&receivedPacket, payload, sizeof(PacketUID));
+
+          Serial.print("Packet: ");
+          Serial.println(receivedPacket.Packet);
+          Serial.print("ChipUID: ");
+          Serial.println(receivedPacket.UID);
+        }
+        break;
+      }
+
+      /*default:
+        Serial.print("Received binary data, length: ");
+        Serial.println(length);
+        if (length == 2) {
+          Serial.println((uint8_t)type);
+          PacketUID receivedPacket;
+          memcpy(&receivedPacket, payload, sizeof(PacketUID));
+
+          Serial.print("Packet: ");
+          Serial.println(receivedPacket.Packet);
+          Serial.print("ChipUID: ");
+          Serial.println(receivedPacket.UID);
+        }
+        break;*/
   }
 }
 
