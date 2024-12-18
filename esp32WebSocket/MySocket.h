@@ -4,26 +4,46 @@
 
 WebSocketsClient webSocket;
 
-void SendTestPack () {
+TaskHandle_t WebSocketTask;
+void WebSocket( void * parameter) {
+  uint64_t Timer = 0;
+  while (true) {
+    webSocket.loop();
+    if (webSocket.isConnected()) {
+      R = 0; G = 140; B = 0;
+      /*if (millis() > Timer) {
+        Timer = millis() + 15000;
+        SendTestPack ();
+      }*/
+
+    } else {
+      R = 140; G = 0; B = 0;
+    }
+    delay(0);
+  }
+}
+
+void SendTestPack () 
+{
   PacketStart Packet;
 
   Packet.Packet     = START;
   Packet.ChipID     = ESP.getEfuseMac();
   Packet.DeviceType = TEST;
 
-  Serial.println(ESP.getEfuseMac());
+  //Serial.println(ESP.getEfuseMac());
 
-  uint16_t DataSize = sizeof(Packet);
+  uint16_t DataSize = sizeof(Packet);  // Размер структуры
 
-  Serial.println(DataSize);
+  //erial.println(DataSize);
 
-  uint8_t Data[DataSize];
-  memcpy(Data, &Packet, DataSize);
+  uint8_t Data[DataSize];              // Выделяю память
+  memcpy(Data, &Packet, DataSize);     // Копирую пакет на отправку
 
-  webSocket.sendBIN(Data, DataSize);
+  webSocket.sendBIN(Data, DataSize);   // Отправялю пакет на сервер
 }
 
-void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
       case WStype_CONNECTED:
       {
@@ -46,15 +66,23 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   }
 }
 
-void WebSocketInit () {
-  webSocket.begin(ADDR, PORT, URL);
-  webSocket.onEvent(webSocketEvent);
+void WebSocketInit () 
+{
+  webSocket.begin(ADDR, PORT, URL);      // Инициирую подключение к серверу
+  webSocket.onEvent(webSocketEvent);     // Указываю обработчик для событий
+  xTaskCreatePinnedToCore(WebSocket, "WebSocketTask", 1024*20, NULL, 0, &WebSocketTask, 0);   // Запускаю задачу для webSocket
 }
 
-void WifiInit () {
+void WifiInit ()  // Подключаюсь к сети
+{
   WiFi.begin(ssid, password);
+  uint64_t Timer = millis();
   while (WiFi.status() != WL_CONNECTED) {
-      delay(1000);
-      Serial.println("Connecting to WiFi...");
+      if (millis () > Timer) {
+        Timer = millis() + 200;
+        Serial.println("Connecting to WiFi...");
+      }
   }
+  Serial.println("WIFI Connect");
+  Freg = 300;
 }
