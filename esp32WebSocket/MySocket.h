@@ -23,7 +23,7 @@ void SendPacketStart ()
   PacketStart Packet;
 
   Packet.Packet     = START;
-  Packet.UID        = 2;
+  Packet.UID        = 1;
   Packet.ChipID     = ESP.getEfuseMac();
   Packet.DeviceType = TELEMETRY;
 

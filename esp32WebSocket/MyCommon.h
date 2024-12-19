@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include "Base64.h"
 
-//#define HOME
-#define WORK
+#define HOME
+//#define WORK
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
 #ifdef WORK
