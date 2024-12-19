@@ -10,27 +10,24 @@ void WebSocket( void * parameter) {
   while (true) {
     webSocket.loop();
     if (webSocket.isConnected()) {
-      R = 0; G = 140; B = 0;
+      if (OneFlag) R = 0; G = 140; B = 0; OneFlag = false;
     } else {
-      R = 140; G = 0; B = 0;
+      if (!OneFlag) R = 140; G = 0; B = 0; OneFlag = true;
     }
     delay(0);
   }
 }
 
-void SendTestPack () 
+void SendPacketStart () 
 {
   PacketStart Packet;
 
   Packet.Packet     = START;
+  Packet.UID        = 2;
   Packet.ChipID     = ESP.getEfuseMac();
   Packet.DeviceType = TELEMETRY;
 
-  //Serial.println(ESP.getEfuseMac());
-
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
-
-  //erial.println(DataSize);
 
   uint8_t Data[DataSize];              // Выделяю память
   memcpy(Data, &Packet, DataSize);     // Копирую пакет на отправку
@@ -38,13 +35,12 @@ void SendTestPack ()
   webSocket.sendBIN(Data, DataSize);   // Отправялю пакет на сервер
 }
 
-
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
       case WStype_CONNECTED:
       {
         Serial.println("Connected to server");
-        SendTestPack ();
+        SendPacketStart ();
         break;
       }
 
@@ -60,37 +56,12 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // О�
         break;
       }
 
-      case WStype_BIN: // обрабатываем бинарные сообщения
+      case WStype_BIN: 
       { 
-        Serial.println((uint8_t)type);
-        Serial.print("Received binary data, length: ");
-        Serial.println(length);
-        if (length == 2) {
-          PacketUID receivedPacket;
-          memcpy(&receivedPacket, payload, sizeof(PacketUID));
-
-          Serial.print("Packet: ");
-          Serial.println(receivedPacket.Packet);
-          Serial.print("ChipUID: ");
-          Serial.println(receivedPacket.UID);
-        }
+        Serial.println("Received binary data");
+        ParsePacket (payload, length);   // Разбор принятых данных от сервера
         break;
       }
-
-      /*default:
-        Serial.print("Received binary data, length: ");
-        Serial.println(length);
-        if (length == 2) {
-          Serial.println((uint8_t)type);
-          PacketUID receivedPacket;
-          memcpy(&receivedPacket, payload, sizeof(PacketUID));
-
-          Serial.print("Packet: ");
-          Serial.println(receivedPacket.Packet);
-          Serial.print("ChipUID: ");
-          Serial.println(receivedPacket.UID);
-        }
-        break;*/
   }
 }
 

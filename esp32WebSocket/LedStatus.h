@@ -6,6 +6,7 @@ uint16_t Freg = 500;
 uint8_t R = 0;
 uint8_t G = 0;
 uint8_t B = 140;
+bool OneFlag = true;   // Нужен для разового определения цвета светодиода
 
 void LedStatus (uint8_t R, uint8_t G, uint8_t B)
 {

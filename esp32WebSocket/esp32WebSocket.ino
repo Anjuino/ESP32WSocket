@@ -5,6 +5,7 @@
 void setup() {
   Serial.begin(115200);
   LedInit();
+  // Тут добавить выгрузку данных из EEPROM (UID)
   WifiInit();
   WebSocketInit();
 }
