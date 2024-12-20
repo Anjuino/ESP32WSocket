@@ -1,5 +1,6 @@
-#include "HardwareSerial.h"
+/*#include "HardwareSerial.h"
 #include "Packet.h"
+#include "Settings.h"
 
 void ParsePacket (uint8_t * payload, uint64_t length)
 {
@@ -19,7 +20,8 @@ void ParsePacket (uint8_t * payload, uint64_t length)
       PacketUID ReceivedPacket;
       memcpy(&ReceivedPacket, PacketData, sizeof(PacketUID));
       Serial.printf("UID: %d\n", ReceivedPacket.UID);
-      // Тут надо писать UID в EEPROM
+      Settings.UID = ReceivedPacket.UID;
+      WriteSettings ();
     }
   }
-}
+}*/

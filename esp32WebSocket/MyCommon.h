@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include "Base64.h"
-
-#define HOME
-//#define WORK
+#include "Settings.h"
+//#define HOME
+#define WORK
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
 #ifdef WORK
@@ -29,6 +29,6 @@ String URL = String("/ws?key=") + base64::encode("ESP32");
 const uint16_t PORT = 8888;
 //////////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////Настройки в контроллере/////////////////////////////
-//uint8_t UID = 2;
+
+
  

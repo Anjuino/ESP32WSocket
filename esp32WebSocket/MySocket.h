@@ -1,6 +1,5 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
-#include <Packet.h>
 
 WebSocketsClient webSocket;
 
@@ -23,7 +22,7 @@ void SendPacketStart ()
   PacketStart Packet;
 
   Packet.Packet     = START;
-  Packet.UID        = 1;
+  Packet.UID        = Settings.UID;
   Packet.ChipID     = ESP.getEfuseMac();
   Packet.DeviceType = TELEMETRY;
 
@@ -45,7 +44,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // –û–
       }
 
       case WStype_DISCONNECTED:
-      {
+      { 
         Serial.println("Disconnected from server");
         break;
       }
