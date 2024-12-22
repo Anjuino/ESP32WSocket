@@ -1,8 +1,13 @@
 #include <stdint.h>
 #include "Base64.h"
 #include "Settings.h"
-//#define HOME
-#define WORK
+
+#include <WiFi.h>
+#include <WebSocketsClient.h>
+WebSocketsClient webSocket;
+
+#define HOME
+//#define WORK
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
 #ifdef WORK

@@ -1,8 +1,3 @@
-#include <WiFi.h>
-#include <WebSocketsClient.h>
-
-WebSocketsClient webSocket;
-
 TaskHandle_t WebSocketTask;
 void WebSocket( void * parameter) {
   uint64_t Timer = 0;
@@ -17,22 +12,7 @@ void WebSocket( void * parameter) {
   }
 }
 
-void SendPacketStart () 
-{
-  PacketStart Packet;
 
-  Packet.Packet     = START;
-  Packet.UID        = Settings.UID;
-  Packet.ChipID     = ESP.getEfuseMac();
-  Packet.DeviceType = TELEMETRY;
-
-  uint16_t DataSize = sizeof(Packet);  // Размер структуры
-
-  uint8_t Data[DataSize];              // Выделяю память
-  memcpy(Data, &Packet, DataSize);     // Копирую пакет на отправку
-
-  webSocket.sendBIN(Data, DataSize);   // Отправялю пакет на сервер
-}
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
@@ -46,6 +26,17 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // О�
       case WStype_DISCONNECTED:
       { 
         Serial.println("Disconnected from server");
+        break;
+      }
+
+      case WStype_PING:
+      { 
+        SendPong();
+        break;
+      }
+
+      case WStype_PONG:
+      {
         break;
       }
 
