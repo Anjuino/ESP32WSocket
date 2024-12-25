@@ -6,8 +6,8 @@
 #include <WebSocketsClient.h>
 WebSocketsClient webSocket;
 
-#define HOME
-//#define WORK
+//#define HOME
+#define WORK
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
 #ifdef WORK

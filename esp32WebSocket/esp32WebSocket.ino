@@ -18,12 +18,12 @@ void setup() {
 
 void loop() {
   if (millis() > Timer) {
-    Timer = millis() + 5000;
-    SendPacketTepmHum(false);
+    Timer = millis() + 600000;
+    SendPacketTepmHum();
   }
 
   if (millis() > Timer1) {
-    Timer1 = millis() + 15000;
+    Timer1 = millis() + 660000;
     SendPacketCO2();
   }
 }

@@ -50,9 +50,9 @@ struct PacketTemp_Hum {
 };
 
 struct PacketCO2 {
-  uint8_t  Packet;
-  bool IsNeedWriteDataBase;     
-  uint8_t  UID;    
+  uint8_t  Packet; 
+  uint8_t  UID;
+  bool IsNeedWriteDataBase;      
   uint16_t CO2ppm;
 };
 #pragma pack(pop) // Возвращаем предыдущее выравнивание
@@ -60,9 +60,9 @@ struct PacketCO2 {
 void SendPacket(uint8_t *hData, uint16_t Size)
 {
   uint8_t Data[Size];                  // Выделяю память
-  memcpy(Data, hData, Size);     // Копирую пакет на отправку
+  memcpy(Data, hData, Size);           // Копирую пакет на отправку
 
-  webSocket.sendBIN(Data, Size);   // Отправялю пакет на сервер
+  webSocket.sendBIN(Data, Size);       // Отправялю пакет на сервер
 }
 
 void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
@@ -114,7 +114,6 @@ void SendPacketStart()
 
 void SendPong()
 {
-  //Serial.println("Ping");
   webSocket.sendBIN((const uint8_t*)NULL, 0);
   delay(0);
 }
@@ -123,6 +122,9 @@ void ParsePacket(uint8_t * payload, uint64_t length)
 {
   Serial.print("Размер пакета: ");
   Serial.println(length);
+  uint8_t TypePacketResponse = payload[0];     // Тип пакета
+  //Serial.println("Принял пакет:");
+  //Serial.print(TypePacketResponse);
 
   uint16_t SizeData = length - 1;              // Определяю размер пакета без типа
   uint8_t PacketData[SizeData];                // Определяю массив под данные без типа пакета
@@ -135,23 +137,29 @@ void ParsePacket(uint8_t * payload, uint64_t length)
     {
       Serial.println("Пакет с UID");
       PacketUID ReceivedPacket;
+
       memcpy(&ReceivedPacket, PacketData, sizeof(PacketUID));
       Serial.printf("UID: %d\n", ReceivedPacket.UID);
+
       Settings.UID = ReceivedPacket.UID;
+
       WriteSettings ();
       Serial.printf("UIDFlash: %d\n", Settings.UID);
+      break;
     }
 
     case GET_Temp_AND_Hum:
     {
       Serial.println("Запрос Temp и Hum");
       SendPacketTepmHum(false);
+      break;
     }
 
     case GET_CO2ppm:
     {
       Serial.println("Запрос CO2");
       SendPacketCO2(false);
+      break;
     }
   }
 }

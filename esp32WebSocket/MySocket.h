@@ -12,8 +12,6 @@ void WebSocket( void * parameter) {
   }
 }
 
-
-
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
       case WStype_CONNECTED:
