@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>Connected Devices</h1>
+    <ul id="device-list">
+        <!-- Здесь будут отображаться устройства -->
+    </ul>
+    <button id="updateButton">Обновить список</button>
+	<button id="GetTemp">Получить температуру</button>
+	
+    <script>
+    const socket = new WebSocket('ws://192.168.0.105:8888/wsApp');
+    const deviceList = document.getElementById('device-list');
+    const updateButton = document.getElementById('updateButton');
+	const Button = document.getElementById('GetTemp');
+
+
+        socket.onopen = function(event) {
+            console.log("Connected to WebSocket Server.");
+             socket.send("get_clients")
+        };
+
+        socket.onmessage = function(event) {
+            const message = event.data;
+                try {
+                  const devices = JSON.parse(message);
+                  deviceList.innerHTML = ''; // Очищаем список
+                  devices.forEach(device => {
+                  const listItem = document.createElement('li');
+                  listItem.textContent = `Device UID: ${device.UID}, Type: ${device.Type}`;
+                  deviceList.appendChild(listItem);
+                   });
+                } catch (e) {
+                  console.log(message)
+                 }
+        };
+          
+        updateButton.addEventListener("click", function(){
+          socket.send("get_clients");
+        })
+		Button.addEventListener("click", function(){
+          socket.send("get_Temp");
+        })
+        socket.onclose = function(event){
+          console.log('Соединение закрыто')
+        }
+        socket.onerror = function(error){
+          console.log('Произошла ошибка:' + error)
+        }
+    </script>
+</body>
+</html>
