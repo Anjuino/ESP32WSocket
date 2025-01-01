@@ -27,6 +27,15 @@ enum {
 } TypeDevice;
 
 ///////////////////// СТАРТОВЫЙ ПАКЕТ///////////////////////
+
+//////////////////// ТИПЫ КОМАНД////////////////////////////
+enum {
+  SETTIMEDHT,
+  SETTIMEMQ135,
+  LEDBLINK,
+} TypeCommand;
+
+
 #pragma pack(push, 1) // Устанавливаем выравнивание в 1 байт
 struct PacketStart {
   uint8_t  Packet;
@@ -44,7 +53,8 @@ struct PacketUID {
 struct PacketTemp_Hum {
   uint8_t  Packet;     
   uint8_t  UID;
-  bool IsNeedWriteDataBase;    
+  bool IsNeedWriteDataBase;
+  bool IsSensor;    
   float Temperature;
   float Humidity;  
 };
@@ -52,9 +62,16 @@ struct PacketTemp_Hum {
 struct PacketCO2 {
   uint8_t  Packet; 
   uint8_t  UID;
-  bool IsNeedWriteDataBase;      
+  bool IsNeedWriteDataBase;
+  bool IsSensor;       
   uint16_t CO2ppm;
 };
+
+struct PacketCommand {
+  uint8_t  Command;
+  uint32_t CommandData;
+};
+
 #pragma pack(pop) // Возвращаем предыдущее выравнивание
 
 void SendPacket(uint8_t *hData, uint16_t Size)
@@ -66,16 +83,45 @@ void SendPacket(uint8_t *hData, uint16_t Size)
 }
 
 void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
-{
-  //// Тут нужна функция получения температуры и влажности с датчика//////////////
-  float Temperature = random(20, 30);
-  float Humidity    = random(20, 30);
+{ 
+  float Humidity    = -1;    
+  float Temperature = -273;
+  bool IsSensor;
+  #ifdef DHT22Sensor
+    IsSensor = true;
+    uint8_t GetTry = 0;
+
+    while (GetTry < 3) {
+      Humidity = dht22.getHumidity();
+      //Serial.println(Humidity);
+      if (Humidity > 0) {
+        GetTry = 0;
+        break;
+      }
+      GetTry++;
+    }
+
+    GetTry = 0;
+    while (GetTry < 3) {
+      Temperature = dht22.getTemperature();
+      //Serial.println(Temperature);
+      if (Temperature > -273) {
+        GetTry = 0;
+        break;
+      } 
+      GetTry++;
+    }
+
+  #else
+    IsSensor = false;
+  #endif  
 
   PacketTemp_Hum Packet;
 
   Packet.Packet              = DATA_Temp_AND_Hum;
   Packet.UID                 = Settings.UID;
   Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
+  Packet.IsSensor            = IsSensor;
   Packet.Temperature         = Temperature;
   Packet.Humidity            = Humidity;
 
@@ -85,14 +131,23 @@ void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
 
 void SendPacketCO2(bool IsNeedWriteDataBase = true) 
 {
-  /////// Тут надо получать C02///////////
-  uint16_t CO2ppm = random(400, 700);
+  uint16_t CO2ppm = 0;
+  bool IsSensor;
+
+  #ifdef MQ135Sensor
+    IsSensor = true;
+    CO2ppm = random(400, 700);
+    /////ТУТ ПОЛУЧАЮ СО2 от дачтка/////////
+  #else
+    IsSensor = false;
+  #endif  
 
   PacketCO2 Packet;
 
   Packet.Packet              = DATA_CO2ppm;
   Packet.UID                 = Settings.UID;
   Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
+  Packet.IsSensor            = IsSensor;
   Packet.CO2ppm              = CO2ppm;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
@@ -105,7 +160,11 @@ void SendPacketStart()
 
   Packet.Packet     = START;
   Packet.UID        = Settings.UID;
-  Packet.ChipID     = ESP.getEfuseMac();
+  #ifdef ESP32
+    Packet.ChipID     = ESP.getEfuseMac();
+  #else
+    Packet.ChipID     = ESP.getChipId();
+  #endif  
   Packet.DeviceType = TELEMETRY;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
@@ -161,5 +220,36 @@ void ParsePacket(uint8_t * payload, uint64_t length)
       SendPacketCO2(false);
       break;
     }
+
+    case COMMAND:
+    {
+      Serial.println("Пришла команда");
+      PacketCommand ReceivedPacket;
+      memcpy(&ReceivedPacket, PacketData, sizeof(PacketUID));
+
+      uint8_t TypeCommand = ReceivedPacket.Command;
+
+      switch (TypeCommand)
+      {
+        #ifdef CONTROLLER_TELEMETRY
+          case SETTIMEDHT:
+          {
+            TimerDHT = ReceivedPacket.CommandData;
+            Settings.TimerDHT = TimerDHT;
+            WriteSettings();
+            break;
+          }
+          case SETTIMEMQ135:
+          {
+            TimerMQ135 = ReceivedPacket.CommandData;
+            Settings.TimerMQ135 = TimerMQ135;
+            WriteSettings();
+            break;
+          }
+        #endif
+      }
+      break;
+    }
   }
+  return;
 }

@@ -1,17 +1,3 @@
-TaskHandle_t WebSocketTask;
-void WebSocket( void * parameter) {
-  uint64_t Timer = 0;
-  while (true) {
-    webSocket.loop();
-    if (webSocket.isConnected()) {
-      if (OneFlag) R = 0; G = 140; B = 0; OneFlag = false;
-    } else {
-      if (!OneFlag) R = 140; G = 0; B = 0; OneFlag = true;
-    }
-    delay(0);
-  }
-}
-
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
       case WStype_CONNECTED:
@@ -57,7 +43,6 @@ void WebSocketInit ()
 {
   webSocket.begin(ADDR, PORT, URL);      // Инициирую подключение к серверу
   webSocket.onEvent(webSocketEvent);     // Указываю обработчик для событий
-  xTaskCreatePinnedToCore(WebSocket, "WebSocketTask", 1024*20, NULL, 0, &WebSocketTask, 0);   // Запускаю задачу для webSocket
 }
 
 void WifiInit ()  // Подключаюсь к сети
@@ -71,5 +56,4 @@ void WifiInit ()  // Подключаюсь к сети
       }
   }
   Serial.println("WIFI Connect");
-  Freg = 300;
 }
