@@ -7,6 +7,7 @@ enum {
   START,
   DATA_Temp_AND_Hum,
   DATA_CO2ppm,
+  DATA_TIMER_SENSOR,
 } TypePacketSend;
 
 // Пакеты с сервера
@@ -30,9 +31,11 @@ enum {
 
 //////////////////// ТИПЫ КОМАНД////////////////////////////
 enum {
-  SETTIMEDHT,
-  SETTIMEMQ135,
+  Test,
+  SET_TIME_TEMP_AND_HUM,
+  SET_TIME_CO2,
   LEDBLINK,
+  GET_TIMER_SENSOR,
 } TypeCommand;
 
 
@@ -70,6 +73,12 @@ struct PacketCO2 {
 struct PacketCommand {
   uint8_t  Command;
   uint32_t CommandData;
+};
+
+struct PacketTimerSensor {
+  uint8_t  Packet; 
+  uint8_t UID;
+  uint32_t TimerSensor;
 };
 
 #pragma pack(pop) // Возвращаем предыдущее выравнивание
@@ -133,11 +142,12 @@ void SendPacketCO2(bool IsNeedWriteDataBase = true)
 {
   uint16_t CO2ppm = 0;
   bool IsSensor;
-
+  
   #ifdef MQ135Sensor
     IsSensor = true;
-    CO2ppm = random(400, 700);
-    /////ТУТ ПОЛУЧАЮ СО2 от дачтка/////////
+    //CO2ppm = random(400, 700);
+    Serial.println(gasSensor.getRZero());
+    CO2ppm = gasSensor.getPPM();
   #else
     IsSensor = false;
   #endif  
@@ -149,6 +159,26 @@ void SendPacketCO2(bool IsNeedWriteDataBase = true)
   Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
   Packet.IsSensor            = IsSensor;
   Packet.CO2ppm              = CO2ppm;
+
+  uint16_t DataSize = sizeof(Packet);  // Размер структуры
+  SendPacket((uint8_t*)&Packet, DataSize);
+}
+
+void SendPacketTimerSensor(uint32_t TypeSensor)
+{
+  uint32_t Timer = 1;
+  #ifdef TEMPERATURE_SENSOR
+    if(TypeSensor == 1) Timer = Settings.TimerTempAndHum;
+  #endif
+  #ifdef CO2_SENSOR
+    if(TypeSensor == 2) Timer = Settings.TimerCO2;
+  #endif
+
+  PacketTimerSensor Packet;
+
+  Packet.Packet              = DATA_TIMER_SENSOR;
+  Packet.UID                 = Settings.UID;
+  Packet.TimerSensor         = Timer;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
@@ -225,27 +255,46 @@ void ParsePacket(uint8_t * payload, uint64_t length)
     {
       Serial.println("Пришла команда");
       PacketCommand ReceivedPacket;
-      memcpy(&ReceivedPacket, PacketData, sizeof(PacketUID));
+      memcpy(&ReceivedPacket, PacketData, sizeof(PacketCommand));
 
       uint8_t TypeCommand = ReceivedPacket.Command;
+      Serial.println(ReceivedPacket.CommandData);
 
       switch (TypeCommand)
       {
         #ifdef CONTROLLER_TELEMETRY
-          case SETTIMEDHT:
+          case GET_TIMER_SENSOR:
           {
-            TimerDHT = ReceivedPacket.CommandData;
-            Settings.TimerDHT = TimerDHT;
-            WriteSettings();
+            if (ReceivedPacket.CommandData) SendPacketTimerSensor(ReceivedPacket.CommandData);
             break;
           }
-          case SETTIMEMQ135:
-          {
-            TimerMQ135 = ReceivedPacket.CommandData;
-            Settings.TimerMQ135 = TimerMQ135;
-            WriteSettings();
-            break;
-          }
+
+          #ifdef TEMPERATURE_SENSOR
+            case SET_TIME_TEMP_AND_HUM:
+            {
+              if (ReceivedPacket.CommandData) {
+                TimerTempAndHum = ReceivedPacket.CommandData;
+                Settings.TimerTempAndHum = TimerTempAndHum;
+                Serial.println(Settings.TimerTempAndHum);
+                WriteSettings();
+              }
+
+              break;
+            }
+          #endif
+
+          #ifdef CO2_SENSOR
+            case SET_TIME_CO2:
+            {
+              if (ReceivedPacket.CommandData) {
+                TimerCO2 = ReceivedPacket.CommandData;
+                Settings.TimerCO2 = TimerCO2;
+                WriteSettings();
+              }
+              break;
+            }
+          #endif
+
         #endif
       }
       break;

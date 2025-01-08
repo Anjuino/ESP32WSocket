@@ -1,3 +1,6 @@
+#define HOME
+//#define WORK
+
 #include <stdint.h>
 #include "Base64.h"
 #ifdef ESP32
@@ -11,15 +14,21 @@
 WebSocketsClient webSocket;
 
 #define CONTROLLER_TELEMETRY
+//#define TEMPERATURE_SENSOR
+//#define CO2_SENSOR 
+
 //#define CONTROLLER_LED
 
-
-#define HOME
-//#define WORK
-
 #ifdef CONTROLLER_TELEMETRY
-  #define DHT22Sensor
-  //#define MQ135Sensor
+  #ifdef TEMPERATURE_SENSOR
+    #define DHT22Sensor
+    ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
+  #endif
+
+  #ifdef CO2_SENSOR  
+    #define MQ135Sensor
+    ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
+  #endif
 #endif
 
 #ifdef DHT22Sensor
@@ -30,6 +39,17 @@ WebSocketsClient webSocket;
 
 #ifdef MQ135Sensor
   #include <MQ135.h>
+  // Делал калибровку на свежем воздухе
+  uint64_t TimerCallibrate = millis() + 15000;
+  MQ135 gasSensor = MQ135(A0, 26.33);
+  void CallibrateMQ135 ()
+  {
+    float R = 1.00;
+    while (gasSensor.getPPM() < 400) {
+      R = R + 1.11;
+      gasSensor.SetRZero(R);
+    }
+  }
 #endif
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
@@ -58,9 +78,14 @@ const uint16_t PORT = 8888;
 //////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////ПРОЧИЕ НАСТРОЙКИ/////////////////////////////////////////
-uint64_t Timer1   = millis() + 10000;
-uint64_t Timer2   = millis() + 10000;
-uint32_t TimerDHT   = 0;
-uint32_t TimerMQ135 = 0;
+#ifdef TEMPERATURE_SENSOR
+  uint64_t Timer1   = millis() + 10000;
+  uint32_t TimerTempAndHum   = 0;
+#endif
+
+#ifdef CO2_SENSOR
+  uint64_t Timer2   = millis() + 10000;
+  uint32_t TimerCO2 = 0;
+#endif
 
  
