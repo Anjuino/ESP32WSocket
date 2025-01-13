@@ -15,10 +15,10 @@
 #define STATIC     249
 #define OFF        250
 
-#define PIN 4 // esp32
+#define PIN 27 // esp32
 
 
-uint16_t CountLed = 192;
+uint16_t CountLed = 60;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel (CountLed, PIN, NEO_GRB + NEO_KHZ800); 
 
@@ -328,6 +328,8 @@ void SetMode(uint32_t Value)
     r1 = (Value >> 16) & 0xFF;           // Выделяем следующий байт (R)
     g1 = (Value >> 8) & 0xFF;            // Выделяем следующий байт (G)
     b1 = Value & 0xFF;                   // Выделяем младший байт (B)
+
+    if (Mode == 249) FlagOneOn = true;
   }
 
   /*Serial.println(Mode);
