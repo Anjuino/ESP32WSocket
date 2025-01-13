@@ -1,5 +1,5 @@
-#define HOME
-//#define WORK
+//#define HOME
+#define WORK
 
 #include <stdint.h>
 #include "Base64.h"
@@ -13,11 +13,11 @@
 #include <WebSocketsClient.h>
 WebSocketsClient webSocket;
 
-#define CONTROLLER_TELEMETRY
+//#define CONTROLLER_TELEMETRY
 //#define TEMPERATURE_SENSOR
 //#define CO2_SENSOR 
 
-//#define CONTROLLER_LED
+#define CONTROLLER_LED
 
 #ifdef CONTROLLER_TELEMETRY
   #ifdef TEMPERATURE_SENSOR
@@ -50,6 +50,11 @@ WebSocketsClient webSocket;
       gasSensor.SetRZero(R);
     }
   }
+#endif
+
+
+#ifdef CONTROLLER_LED
+  #include "Ws2812.h"
 #endif
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////

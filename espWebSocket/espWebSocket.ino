@@ -9,6 +9,11 @@ void setup() {
   GetSettings();
   WifiInit();
   WebSocketInit();
+
+  #ifdef CONTOLLER_LED
+    Ws2812Init();
+  #endif
+  
 }
 
 
@@ -37,5 +42,9 @@ void loop() {
         }
       #endif
     #endif
+  #endif
+
+  #ifdef CONTROLLER_LED
+    Ws2812Loop ();
   #endif
 }

@@ -32,10 +32,15 @@ enum {
 //////////////////// ТИПЫ КОМАНД////////////////////////////
 enum {
   Test,
+  ////////////////////// Для телеметрии ////////////////////
   SET_TIME_TEMP_AND_HUM,
   SET_TIME_CO2,
   LEDBLINK,
   GET_TIMER_SENSOR,
+  ///////////////////// Для управления лентой ////////////////////
+  SET_BLIND,
+  SET_SPEED,
+  SET_MODE
 } TypeCommand;
 
 
@@ -195,7 +200,7 @@ void SendPacketStart()
   #else
     Packet.ChipID     = ESP.getChipId();
   #endif  
-  Packet.DeviceType = TELEMETRY;
+  Packet.DeviceType = LEDCONTROL;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
@@ -237,19 +242,21 @@ void ParsePacket(uint8_t * payload, uint64_t length)
       break;
     }
 
-    case GET_Temp_AND_Hum:
-    {
-      Serial.println("Запрос Temp и Hum");
-      SendPacketTepmHum(false);
-      break;
-    }
+    #ifdef CONTROLLER_TELEMETRY
+      case GET_Temp_AND_Hum:
+      {
+        Serial.println("Запрос Temp и Hum");
+        SendPacketTepmHum(false);
+        break;
+      }
 
-    case GET_CO2ppm:
-    {
-      Serial.println("Запрос CO2");
-      SendPacketCO2(false);
-      break;
-    }
+      case GET_CO2ppm:
+      {
+        Serial.println("Запрос CO2");
+        SendPacketCO2(false);
+        break;
+      }
+    #endif
 
     case COMMAND:
     {
@@ -295,6 +302,24 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             }
           #endif
 
+        #endif
+
+        #ifdef CONTROLLER_LED
+          case SET_BLIND:
+          {
+            strip.setBrightness (ReceivedPacket.CommandData * 1.9);
+            strip.show (); 
+          }
+
+          case SET_SPEED:
+          {
+            Ws2812SetSpeed (ReceivedPacket.CommandData);
+          }
+
+          case SET_MODE:
+          { 
+            SetMode(ReceivedPacket.CommandData);
+          }
         #endif
       }
       break;
