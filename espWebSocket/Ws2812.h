@@ -25,7 +25,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel (CountLed, PIN, NEO_GRB + NEO_KHZ800
 bool FlagOneOn = false;    // Флаг для разового включения
 uint8_t step = 0;
 uint8_t stepOld = 1;
-uint8_t Speed = 10;
+uint32_t Speed = 10;
 uint8_t BlindLed = 50;
 
 bool flag = true;
@@ -68,7 +68,7 @@ void Ws2812Init ()
   strip.setBrightness (BlindLed);
 }
 
-void Ws2812SetSpeed (uint8_t SpeedRecv) 
+void Ws2812SetSpeed (uint32_t SpeedRecv) 
 {
   Speed = SpeedRecv;
 }
@@ -87,7 +87,7 @@ uint32_t Wheel (byte WheelPos)
 }
 
 uint16_t z = 0;
-void rainbowCycle (uint8_t wait) {
+void rainbowCycle (uint32_t wait) {
 
   for(uint16_t i=0; i< strip.numPixels (); i++) {
     strip.setPixelColor(i, Wheel (((i * 256 / strip.numPixels ()) + z) & 255));
@@ -99,7 +99,7 @@ void rainbowCycle (uint8_t wait) {
   if (z == 256) z = 0;
 }
 
-void RandomLight (uint8_t wait)
+void RandomLight (uint32_t wait)
 {
   uint16_t RandNumPix = random (strip.numPixels ());
 
@@ -118,7 +118,7 @@ int a = 0;
 uint8_t t = 0;
 bool flaga = true;
 
-void RGBLoop (uint8_t wait)
+void RGBLoop (uint32_t wait)
 {
   if (flaga) {
     switch (a) {
@@ -153,7 +153,7 @@ void RGBLoop (uint8_t wait)
   }
 }
 
-void Sparkle (uint8_t red, uint8_t green, uint8_t blue, uint8_t wait) 
+void Sparkle (uint8_t red, uint8_t green, uint8_t blue, uint32_t wait) 
 { 
   Ws2812SetColor (red, green, blue);
   int Pixel = random(strip.numPixels ());
@@ -166,7 +166,7 @@ void Sparkle (uint8_t red, uint8_t green, uint8_t blue, uint8_t wait)
 }
 
 uint16_t count = 0;
-void RunColor (uint8_t wait) 
+void RunColor (uint32_t wait) 
 { 
   strip.setPixelColor (posUp, strip.Color (r1, g1, b1)); // Set the color of the current pixel
   posUp++;
@@ -196,7 +196,7 @@ void RunColor (uint8_t wait)
 
 int Position=0;
 
-void RunningLights (uint8_t red, uint8_t green, uint8_t blue, uint8_t wait) {
+void RunningLights (uint8_t red, uint8_t green, uint8_t blue, uint32_t wait) {
  
   Position++; // = 0; //Position + Rate;
   for (int i=0; i<strip.numPixels (); i++) {
@@ -216,7 +216,7 @@ void RunningLights (uint8_t red, uint8_t green, uint8_t blue, uint8_t wait) {
 }
 
 uint8_t randcolor = 0;
-void Chaos (uint8_t wait) 
+void Chaos (uint32_t wait) 
 {
   for (uint16_t i=0; i < strip.numPixels (); i++) {
     randcolor = random (10);
@@ -235,7 +235,7 @@ void Chaos (uint8_t wait)
   delay (300 - wait*10);
 }
 
-void RunStr (uint8_t wait)
+void RunStr (uint32_t wait)
 { 
   static int pos = 1; // Starting position of the "running lights"
   strip.setPixelColor (pos - 2, strip.Color (r1, g1, b1)); // Set the color of the current pixel
@@ -261,7 +261,7 @@ void RunStr (uint8_t wait)
   if (pos == 0) flag = true;
 }
 
-void RunStr2 (uint8_t wait)
+void RunStr2 (uint32_t wait)
 { 
   static int pos = 1;                     // Starting position of the "running lights"
   static int pos2 = strip.numPixels ();   

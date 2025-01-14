@@ -1,5 +1,5 @@
-//#define HOME
-#define WORK
+#define HOME
+//#define WORK
 
 #include <stdint.h>
 #include "Base64.h"
@@ -55,6 +55,7 @@ WebSocketsClient webSocket;
 
 #ifdef CONTROLLER_LED
   #include "Ws2812.h"
+  TaskHandle_t Task1;
 #endif
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////

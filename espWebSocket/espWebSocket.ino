@@ -10,12 +10,29 @@ void setup() {
   WifiInit();
   WebSocketInit();
 
-  #ifdef CONTOLLER_LED
+  #ifdef CONTROLLER_LED
     Ws2812Init();
+    Serial.println("Создаю задачу для ленты");
+    xTaskCreatePinnedToCore (
+      TaskLed, 
+      "Task1",      
+      30000,        
+      NULL,         
+      1,            
+      &Task1,       
+      1);                            
+    delay(500);
   #endif
-  
 }
 
+#ifdef CONTROLLER_LED
+  void TaskLed( void * pvParameters ){
+    for(;;) {
+      Ws2812Loop ();
+      delay (0);
+    } 
+  }
+#endif
 
 void loop() {
 
@@ -42,9 +59,5 @@ void loop() {
         }
       #endif
     #endif
-  #endif
-
-  #ifdef CONTROLLER_LED
-    Ws2812Loop ();
   #endif
 }

@@ -308,17 +308,20 @@ void ParsePacket(uint8_t * payload, uint64_t length)
           case SET_BLIND:
           {
             strip.setBrightness (ReceivedPacket.CommandData * 1.9);
-            strip.show (); 
+            strip.show ();
+            break; 
           }
 
           case SET_SPEED:
           {
             Ws2812SetSpeed (ReceivedPacket.CommandData);
+            break;
           }
 
           case SET_MODE:
           { 
             SetMode(ReceivedPacket.CommandData);
+            break;
           }
         #endif
       }
