@@ -5,9 +5,12 @@
 // Пакеты на сервер
 enum {
   START,
+  ///////////////// Контроллер телеметрии
   DATA_Temp_AND_Hum,
   DATA_CO2ppm,
   DATA_TIMER_SENSOR,
+  ////////////////// Контроллер для светодоидной ленты
+  DATA_LED_STATE = 10,
 } TypePacketSend;
 
 // Пакеты с сервера
@@ -40,7 +43,8 @@ enum {
   ///////////////////// Для управления лентой ////////////////////
   SET_BLIND,
   SET_SPEED,
-  SET_MODE
+  SET_MODE,
+  LED_GET_STATE,
 } TypeCommand;
 
 
@@ -84,6 +88,17 @@ struct PacketTimerSensor {
   uint8_t  Packet; 
   uint8_t UID;
   uint32_t TimerSensor;
+};
+
+struct PacketLedState {
+  uint8_t  Packet; 
+  uint8_t  UID;
+  uint8_t  Mode;
+  uint32_t Blind;
+  uint32_t Speed;
+  uint8_t  R;
+  uint8_t  G;
+  uint8_t  B;
 };
 
 #pragma pack(pop) // Возвращаем предыдущее выравнивание
@@ -184,6 +199,23 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
   Packet.Packet              = DATA_TIMER_SENSOR;
   Packet.UID                 = Settings.UID;
   Packet.TimerSensor         = Timer;
+
+  uint16_t DataSize = sizeof(Packet);  // Размер структуры
+  SendPacket((uint8_t*)&Packet, DataSize);
+}
+
+void SendPacketLedState()
+{
+  PacketLedState Packet;
+
+  Packet.Packet     = DATA_LED_STATE;
+  Packet.UID        = Settings.UID;
+  Packet.Mode       = step;
+  Packet.Blind      = BlindLed;
+  Packet.Speed      = Speed;
+  Packet.R          = r1;
+  Packet.G          = g1;  
+  Packet.B          = b1;    
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
@@ -307,8 +339,7 @@ void ParsePacket(uint8_t * payload, uint64_t length)
         #ifdef CONTROLLER_LED
           case SET_BLIND:
           {
-            strip.setBrightness (ReceivedPacket.CommandData * 1.9);
-            strip.show ();
+            Ws2812SetBlind (ReceivedPacket.CommandData);
             break; 
           }
 
@@ -323,6 +354,13 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             SetMode(ReceivedPacket.CommandData);
             break;
           }
+
+          case LED_GET_STATE:
+          {
+            SendPacketLedState();
+            break;
+          }
+
         #endif
       }
       break;

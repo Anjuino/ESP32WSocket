@@ -26,7 +26,7 @@ bool FlagOneOn = false;    // Флаг для разового включени�
 uint8_t step = 0;
 uint8_t stepOld = 1;
 uint32_t Speed = 10;
-uint8_t BlindLed = 50;
+uint32_t BlindLed = 50;
 
 bool flag = true;
 
@@ -71,6 +71,13 @@ void Ws2812Init ()
 void Ws2812SetSpeed (uint32_t SpeedRecv) 
 {
   Speed = SpeedRecv;
+}
+
+void Ws2812SetBlind (uint32_t Blind) 
+{ 
+  BlindLed = Blind;
+  strip.setBrightness (BlindLed * 1.9);
+  strip.show ();
 }
 
 uint32_t Wheel (byte WheelPos) 
