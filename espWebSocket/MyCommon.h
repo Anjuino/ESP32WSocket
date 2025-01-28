@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include "Base64.h"
+#include <EEPROM.h>
+
 #ifdef ESP32
   SET_LOOP_TASK_STACK_SIZE(45*1024); // Задаем размер стека для Loop
   #include <WiFi.h>

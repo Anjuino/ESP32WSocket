@@ -18,7 +18,7 @@
 #define PIN 27 // esp32
 
 
-uint16_t CountLed = 60;
+uint16_t CountLed = 55;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel (CountLed, PIN, NEO_GRB + NEO_KHZ800); 
 
@@ -66,6 +66,7 @@ void Ws2812Init ()
   strip.show ();
   delay (50);
   strip.setBrightness (BlindLed);
+  strip.updateLength (CountLed);
 }
 
 void Ws2812SetSpeed (uint32_t SpeedRecv) 

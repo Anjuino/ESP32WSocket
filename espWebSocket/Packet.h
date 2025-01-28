@@ -45,6 +45,7 @@ enum {
   SET_SPEED,
   SET_MODE,
   LED_GET_STATE,
+  SET_LED_COUNT,
 } TypeCommand;
 
 
@@ -186,7 +187,7 @@ void SendPacketCO2(bool IsNeedWriteDataBase = true)
 
 void SendPacketTimerSensor(uint32_t TypeSensor)
 {
-  uint32_t Timer = 1;
+  uint32_t Timer = 1;  // Значение по умолчанию, сигнал о том что таймера нет, значит и нет датчика
   #ifdef TEMPERATURE_SENSOR
     if(TypeSensor == 1) Timer = Settings.TimerTempAndHum;
   #endif
@@ -358,6 +359,22 @@ void ParsePacket(uint8_t * payload, uint64_t length)
           case LED_GET_STATE:
           {
             SendPacketLedState();
+            break;
+          }
+
+          case SET_LED_COUNT:
+          {
+            uint32_t CountLed = ReceivedPacket.CommandData;
+            Serial.println(CountLed);
+            Ws2812SetColor (0, 0, 0);
+            if (CountLed > 700) CountLed = 700;
+            if (CountLed < 0)   CountLed = 0;
+            Serial.println(CountLed);
+            strip.updateLength (CountLed);
+
+            Settings.CountLed = CountLed;
+            WriteSettings();
+            FlagOneOn = true;
             break;
           }
 

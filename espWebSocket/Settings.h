@@ -17,6 +17,7 @@ struct DeviceSettings {
   #endif
 
   #ifdef CONTROLLER_LED
+    uint32_t CountLed;
     //// ТУТ ДОБАВИТЬ ПОЛЯ ДЛЯ КАК В ПРОЕКТЕ WebLed
   #endif  
 };
@@ -36,30 +37,41 @@ void GetSettings ()
   
   uint8_t UID =   Settings.UID;
   if (UID == 255) Settings.UID = 0;
+  bool NeedUpdate = false;
 
   #ifdef CONTROLLER_TELEMETRY
-  bool NeedUpdate = false;
-    #ifdef TEMPERATURE_SENSOR
-      TimerTempAndHum = Settings.TimerTempAndHum;
-      if (TimerTempAndHum   == 4294967295 || TimerTempAndHum == 0) {
-        TimerTempAndHum   = 60000;
-        Settings.TimerTempAndHum = 60000;
-        NeedUpdate = true;
-      }
-    #endif 
+      #ifdef TEMPERATURE_SENSOR
+        TimerTempAndHum = Settings.TimerTempAndHum;
+        if (TimerTempAndHum   == 4294967295 || TimerTempAndHum == 0) {
+          TimerTempAndHum   = 60000;
+          Settings.TimerTempAndHum = 60000;
+          NeedUpdate = true;
+        }
+      #endif 
 
-    #ifdef CO2_SENSOR
-      TimerCO2 = Settings.TimerCO2;
-      if (TimerCO2 == 4294967295 || TimerCO2 == 0) {
-        TimerCO2 = 600000;
-        Settings.TimerCO2 = TimerCO2;
+      #ifdef CO2_SENSOR
+        TimerCO2 = Settings.TimerCO2;
+        if (TimerCO2 == 4294967295 || TimerCO2 == 0) {
+          TimerCO2 = 600000;
+          Settings.TimerCO2 = TimerCO2;
+          NeedUpdate = true;
+        }
+      #endif  
+    #endif
+
+    #ifdef CONTROLLER_LED
+      CountLed = Settings.CountLed;
+      Serial.println(CountLed);
+      if (CountLed > 1000) {
+        CountLed = 50;
+        Settings.CountLed = CountLed;
         NeedUpdate = true;
       }
-    #endif  
+      strip.updateLength (CountLed);
+    #endif
 
     if (NeedUpdate = true) {
       Serial.println("Перезаписываю настройки");
       WriteSettings ();
-    }
-  #endif  
+    }  
 }

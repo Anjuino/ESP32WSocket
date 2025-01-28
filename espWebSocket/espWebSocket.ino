@@ -3,6 +3,8 @@
 #include "Packet.h"
 #include "MySocket.h"
 
+
+
 void setup() {
   Serial.begin(9600);
   EEPROM.begin(128);
@@ -13,10 +15,11 @@ void setup() {
   #ifdef CONTROLLER_LED
     Ws2812Init();
     Serial.println("Создаю задачу для ленты");
+    Serial.println(CountLed);
     xTaskCreatePinnedToCore (
       TaskLed, 
       "Task1",      
-      30000,        
+      50000,        
       NULL,         
       1,            
       &Task1,       
