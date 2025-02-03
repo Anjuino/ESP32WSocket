@@ -6,7 +6,7 @@
 #include <EEPROM.h>
 
 #ifdef ESP32
-  SET_LOOP_TASK_STACK_SIZE(45*1024); // Задаем размер стека для Loop
+  SET_LOOP_TASK_STACK_SIZE(50*1024); // Задаем размер стека для Loop
   #include <WiFi.h>
 #else
   #include <ESP8266WiFi.h>
@@ -15,11 +15,13 @@
 #include <WebSocketsClient.h>
 WebSocketsClient webSocket;
 
-//#define CONTROLLER_TELEMETRY
-//#define TEMPERATURE_SENSOR
-//#define CO2_SENSOR 
-
-#define CONTROLLER_LED
+#define CONTROLLER_TELEMETRY
+#define TEMPERATURE_SENSOR
+#define CO2_SENSOR
+bool IsTempAndHumSensor = true;
+bool IsCO2Sensor        = true;
+bool IsPressureSensor   = false;
+bool IsInaSensor        = false;
 
 #ifdef CONTROLLER_TELEMETRY
   #ifdef TEMPERATURE_SENSOR
@@ -54,10 +56,20 @@ WebSocketsClient webSocket;
   }
 #endif
 
-
+//#define CONTROLLER_LED
+//#define DETECTED_SENSOR
+//#define LIGHT_SENSOR
+bool IsDetectedSensor = false;
+bool IsLightSensor    = false;
 #ifdef CONTROLLER_LED
   #include "Ws2812.h"
   TaskHandle_t Task1;
+  #ifdef DETECTED_SENSOR
+    // ТУТ ДЛЯ ДАТЧИКА ДВИЖЕНИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
+  #endif
+  #ifdef LIGHT_SENSOR
+    // ТУТ ДЛЯ ДАТЧИКА ОСВЕЩЕИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
+  #endif
 #endif
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
@@ -87,12 +99,12 @@ const uint16_t PORT = 8888;
 
 ////////////////////////////ПРОЧИЕ НАСТРОЙКИ/////////////////////////////////////////
 #ifdef TEMPERATURE_SENSOR
-  uint64_t Timer1   = millis() + 10000;
+  uint64_t Timer1   = millis() + 20000;
   uint32_t TimerTempAndHum   = 0;
 #endif
 
 #ifdef CO2_SENSOR
-  uint64_t Timer2   = millis() + 10000;
+  uint64_t Timer2   = millis() + 20000;
   uint32_t TimerCO2 = 0;
 #endif
 

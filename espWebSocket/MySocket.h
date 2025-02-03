@@ -4,6 +4,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // О�
       {
         Serial.println("Connected to server");
         SendPacketStart ();
+        delay(500);
+        SendPacketDeviceConfig();
+        // Тут отправить пакет с конифгом (будет разный для разых устройств)
         break;
       }
 

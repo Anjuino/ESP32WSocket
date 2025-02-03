@@ -11,6 +11,7 @@ enum {
   DATA_TIMER_SENSOR,
   ////////////////// Контроллер для светодоидной ленты
   DATA_LED_STATE = 10,
+  DEVICE_CONFIG  = 20,
 } TypePacketSend;
 
 // Пакеты с сервера
@@ -100,6 +101,22 @@ struct PacketLedState {
   uint8_t  R;
   uint8_t  G;
   uint8_t  B;
+};
+
+struct PacketDeviceConfig {
+  uint8_t  Packet;     
+  uint8_t  DeviceType;
+  uint8_t  UID; 
+  #ifdef CONTROLLER_TELEMETRY
+    bool IsTempAndHumSensor;
+    bool IsCO2Sensor;
+    bool IsPressureSensor;
+    bool IsInaSensor;
+  #endif
+  #ifdef CONTROLLER_LED
+    bool IsDetectedSensor;
+    bool IsLightSensor;
+  #endif
 };
 
 #pragma pack(pop) // Возвращаем предыдущее выравнивание
@@ -205,18 +222,44 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
   SendPacket((uint8_t*)&Packet, DataSize);
 }
 
-void SendPacketLedState()
-{
-  PacketLedState Packet;
+#ifdef CONTROLLER_LED
+  void SendPacketLedState()
+  {
+    PacketLedState Packet;
 
-  Packet.Packet     = DATA_LED_STATE;
+    Packet.Packet     = DATA_LED_STATE;
+    Packet.UID        = Settings.UID;
+    Packet.Mode       = step;
+    Packet.Blind      = BlindLed;
+    Packet.Speed      = Speed;
+    Packet.R          = r1;
+    Packet.G          = g1;  
+    Packet.B          = b1;    
+
+    uint16_t DataSize = sizeof(Packet);  // Размер структуры
+    SendPacket((uint8_t*)&Packet, DataSize);
+  }
+#endif
+
+void SendPacketDeviceConfig()
+{
+  PacketDeviceConfig Packet;
+
+  Packet.Packet     = DEVICE_CONFIG;
   Packet.UID        = Settings.UID;
-  Packet.Mode       = step;
-  Packet.Blind      = BlindLed;
-  Packet.Speed      = Speed;
-  Packet.R          = r1;
-  Packet.G          = g1;  
-  Packet.B          = b1;    
+
+  #ifdef CONTROLLER_TELEMETRY
+    Packet.DeviceType         = TELEMETRY;
+    Packet.IsTempAndHumSensor = IsTempAndHumSensor;
+    Packet.IsCO2Sensor        = IsCO2Sensor;
+    Packet.IsPressureSensor   = IsPressureSensor;
+    Packet.IsInaSensor        = IsInaSensor;
+  #endif
+  #ifdef CONTROLLER_LED
+    Packet.DeviceType       = LEDCONTROL;
+    Packet.IsDetectedSensor = IsDetectedSensor;
+    Packet.IsLightSensor    = IsLightSensor;
+  #endif
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
@@ -233,7 +276,12 @@ void SendPacketStart()
   #else
     Packet.ChipID     = ESP.getChipId();
   #endif  
-  Packet.DeviceType = LEDCONTROL;
+  #ifdef CONTROLLER_TELEMETRY
+    Packet.DeviceType = TELEMETRY;
+  #endif
+  #ifdef CONTROLLER_LED
+    Packet.DeviceType = LEDCONTROL;
+  #endif
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
