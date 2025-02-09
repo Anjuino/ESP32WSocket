@@ -17,15 +17,17 @@ WebSocketsClient webSocket;
 
 #define CONTROLLER_TELEMETRY
 #define TEMPERATURE_SENSOR
-#define CO2_SENSOR
+//#define CO2_SENSOR
+#define PRESSURE_SENSOR
 bool IsTempAndHumSensor = true;
-bool IsCO2Sensor        = true;
-bool IsPressureSensor   = false;
+bool IsCO2Sensor        = false;
+bool IsPressureSensor   = true;
 bool IsInaSensor        = false;
 
 #ifdef CONTROLLER_TELEMETRY
   #ifdef TEMPERATURE_SENSOR
-    #define DHT22Sensor
+    //#define DHT22Sensor
+    #define BME280Sensor
     ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
   #endif
 
@@ -33,6 +35,10 @@ bool IsInaSensor        = false;
     #define MQ135Sensor
     ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
   #endif
+
+  #ifdef PRESSURE_SENSOR
+    #define BME280Sensor  
+  #endif 
 #endif
 
 #ifdef DHT22Sensor
@@ -40,6 +46,12 @@ bool IsInaSensor        = false;
   #define pinDATA 4 
   DHT22 dht22(pinDATA);
 #endif  
+
+#ifdef BME280Sensor
+  #include <Adafruit_Sensor.h>
+  #include <Adafruit_BME280.h>
+  Adafruit_BME280 bme;
+#endif
 
 #ifdef MQ135Sensor
   #include <MQ135.h>
@@ -108,4 +120,7 @@ const uint16_t PORT = 8888;
   uint32_t TimerCO2 = 0;
 #endif
 
- 
+#ifdef PRESSURE_SENSOR
+  uint64_t Timer3 = millis() + 20000;
+  uint32_t TimerPressure = 0;
+#endif

@@ -14,6 +14,10 @@ struct DeviceSettings {
     #ifdef CO2_SENSOR
       uint32_t TimerCO2;
     #endif
+
+    #ifdef PRESSURE_SENSOR
+      uint32_t TimerPressure;
+    #endif
   #endif
 
   #ifdef CONTROLLER_LED
@@ -40,38 +44,47 @@ void GetSettings ()
   bool NeedUpdate = false;
 
   #ifdef CONTROLLER_TELEMETRY
-      #ifdef TEMPERATURE_SENSOR
-        TimerTempAndHum = Settings.TimerTempAndHum;
-        if (TimerTempAndHum   == 4294967295 || TimerTempAndHum == 0) {
-          TimerTempAndHum   = 60000;
-          Settings.TimerTempAndHum = 60000;
-          NeedUpdate = true;
-        }
-      #endif 
-
-      #ifdef CO2_SENSOR
-        TimerCO2 = Settings.TimerCO2;
-        if (TimerCO2 == 4294967295 || TimerCO2 == 0) {
-          TimerCO2 = 600000;
-          Settings.TimerCO2 = TimerCO2;
-          NeedUpdate = true;
-        }
-      #endif  
-    #endif
-
-    #ifdef CONTROLLER_LED
-      CountLed = Settings.CountLed;
-      Serial.println(CountLed);
-      if (CountLed > 1000) {
-        CountLed = 50;
-        Settings.CountLed = CountLed;
+    #ifdef TEMPERATURE_SENSOR
+      TimerTempAndHum = Settings.TimerTempAndHum;
+      if (TimerTempAndHum   == 4294967295 || TimerTempAndHum == 0) {
+        TimerTempAndHum   = 60000;
+        Settings.TimerTempAndHum = 60000;
         NeedUpdate = true;
       }
-      strip.updateLength (CountLed);
+    #endif 
+
+    #ifdef CO2_SENSOR
+      TimerCO2 = Settings.TimerCO2;
+      if (TimerCO2 == 4294967295 || TimerCO2 == 0) {
+        TimerCO2 = 600000;
+        Settings.TimerCO2 = TimerCO2;
+        NeedUpdate = true;
+      }
     #endif
 
-    if (NeedUpdate = true) {
-      Serial.println("Перезаписываю настройки");
-      WriteSettings ();
-    }  
+    #ifdef PRESSURE_SENSOR
+      TimerPressure = Settings.TimerPressure;
+      if (TimerPressure == 4294967295 || TimerPressure == 0) {
+        TimerPressure = 600000;
+        Settings.TimerPressure = TimerPressure;
+        NeedUpdate = true;
+      }
+    #endif  
+  #endif
+
+  #ifdef CONTROLLER_LED
+    CountLed = Settings.CountLed;
+    Serial.println(CountLed);
+    if (CountLed > 1000) {
+      CountLed = 50;
+      Settings.CountLed = CountLed;
+      NeedUpdate = true;
+    }
+    strip.updateLength (CountLed);
+  #endif
+
+  if (NeedUpdate = true) {
+    Serial.println("Перезаписываю настройки");
+    WriteSettings ();
+  }  
 }

@@ -9,6 +9,7 @@ enum {
   DATA_Temp_AND_Hum,
   DATA_CO2ppm,
   DATA_TIMER_SENSOR,
+  DATA_PRESSURE,
   ////////////////// Контроллер для светодоидной ленты
   DATA_LED_STATE = 10,
   DEVICE_CONFIG  = 20,
@@ -20,6 +21,7 @@ enum {
   GET_Temp_AND_Hum,
   GET_CO2ppm,
   COMMAND,
+  GET_PRESSURE,
 } TypePacketResponse;
 
 
@@ -47,6 +49,8 @@ enum {
   SET_MODE,
   LED_GET_STATE,
   SET_LED_COUNT,
+  /////////////////////// Для телеметрии //////////////////////////
+  SET_TIME_PRESSURE,
 } TypeCommand;
 
 
@@ -79,6 +83,14 @@ struct PacketCO2 {
   bool IsNeedWriteDataBase;
   bool IsSensor;       
   uint16_t CO2ppm;
+};
+
+struct PacketPressure {
+  uint8_t  Packet; 
+  uint8_t  UID;
+  bool IsNeedWriteDataBase;
+  bool IsSensor;       
+  float Pressure;
 };
 
 struct PacketCommand {
@@ -161,7 +173,15 @@ void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
 
   #else
     IsSensor = false;
-  #endif  
+  #endif
+
+  #ifdef BME280Sensor
+    IsSensor = true;
+    Humidity    = bme.readHumidity();
+    Temperature = bme.readTemperature();
+  #else
+    IsSensor = false;
+  #endif    
 
   PacketTemp_Hum Packet;
 
@@ -202,6 +222,30 @@ void SendPacketCO2(bool IsNeedWriteDataBase = true)
   SendPacket((uint8_t*)&Packet, DataSize);
 }
 
+void SendPacketPressure(bool IsNeedWriteDataBase = true) 
+{
+  float Pressure = 0;
+  bool IsSensor;
+  
+  #ifdef BME280Sensor
+    IsSensor = true;
+    Pressure    = bme.readPressure() / 133.3;
+  #else
+    IsSensor = false;
+  #endif    
+
+  PacketPressure Packet;
+
+  Packet.Packet              = DATA_PRESSURE;
+  Packet.UID                 = Settings.UID;
+  Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
+  Packet.IsSensor            = IsSensor;
+  Packet.Pressure            = Pressure;
+
+  uint16_t DataSize = sizeof(Packet);  // Размер структуры
+  SendPacket((uint8_t*)&Packet, DataSize);
+}
+
 void SendPacketTimerSensor(uint32_t TypeSensor)
 {
   uint32_t Timer = 1;  // Значение по умолчанию, сигнал о том что таймера нет, значит и нет датчика
@@ -210,6 +254,9 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
   #endif
   #ifdef CO2_SENSOR
     if(TypeSensor == 2) Timer = Settings.TimerCO2;
+  #endif
+  #ifdef PRESSURE_SENSOR
+    if(TypeSensor == 3) Timer = Settings.TimerPressure;
   #endif
 
   PacketTimerSensor Packet;
@@ -337,6 +384,13 @@ void ParsePacket(uint8_t * payload, uint64_t length)
         SendPacketCO2(false);
         break;
       }
+
+      case GET_PRESSURE:
+      {
+        Serial.println("Запрос Давления");
+        SendPacketPressure(false);
+        break;
+      }
     #endif
 
     case COMMAND:
@@ -383,6 +437,17 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             }
           #endif
 
+          #ifdef PRESSURE_SENSOR
+            case SET_TIME_PRESSURE:
+            {
+              if (ReceivedPacket.CommandData) {
+                TimerPressure = ReceivedPacket.CommandData;
+                Settings.TimerPressure = TimerPressure;
+                WriteSettings();
+              }
+              break;
+            }
+          #endif
         #endif
 
         #ifdef CONTROLLER_LED
@@ -425,7 +490,6 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             FlagOneOn = true;
             break;
           }
-
         #endif
       }
       break;

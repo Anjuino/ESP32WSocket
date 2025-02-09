@@ -12,6 +12,10 @@ void setup() {
   WifiInit();
   WebSocketInit();
 
+  #ifdef BME280Sensor
+    bme.begin(0x76);
+  #endif
+
   #ifdef CONTROLLER_LED
     Ws2812Init();
     Serial.println("Создаю задачу для ленты");
@@ -61,6 +65,13 @@ void loop() {
           CallibrateMQ135();
         }
       #endif
+    #endif
+
+    #ifdef PRESSURE_SENSOR
+      if (millis() > Timer3) {
+        Timer3 = millis() + TimerPressure;
+        SendPacketPressure();
+      }
     #endif
   #endif
 }
