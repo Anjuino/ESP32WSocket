@@ -22,6 +22,9 @@ struct DeviceSettings {
 
   #ifdef CONTROLLER_LED
     uint32_t CountLed;
+    #ifdef DETECTED_SENSOR
+      uint8_t ModeWork;
+    #endif
     //// ТУТ ДОБАВИТЬ ПОЛЯ ДЛЯ КАК В ПРОЕКТЕ WebLed
   #endif  
 };
@@ -81,6 +84,11 @@ void GetSettings ()
       NeedUpdate = true;
     }
     strip.updateLength (CountLed);
+
+    #ifdef DETECTED_SENSOR
+      Automode = Settings.ModeWork;
+      Serial.println(Automode);
+    #endif
   #endif
 
   if (NeedUpdate = true) {

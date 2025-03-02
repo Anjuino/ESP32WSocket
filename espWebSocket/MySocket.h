@@ -30,13 +30,14 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // О�
       case WStype_TEXT:
       {
         Serial.printf("Received message: %s\n", payload);
+        ParseString (payload, length);   // Разбор принятых данных от сервера в виде строки
         break;
       }
 
       case WStype_BIN: 
       { 
         Serial.println("Received binary data");
-        ParsePacket (payload, length);   // Разбор принятых данных от сервера
+        ParsePacket (payload, length);   // Разбор принятых данных от сервера в виде бинарных данных
         break;
       }
   }

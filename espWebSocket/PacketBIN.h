@@ -28,7 +28,7 @@ enum {
 
 ///////////// ТИПЫ УСТРОЙСТВ//////////////////////
 enum {
-  TEST,
+  CONTROLPANEL,
   TELEMETRY,
   LEDCONTROL,
 } TypeDevice;
@@ -49,6 +49,7 @@ enum {
   SET_MODE,
   LED_GET_STATE,
   SET_LED_COUNT,
+  SET_MODE_WORK,
   /////////////////////// Для телеметрии //////////////////////////
   SET_TIME_PRESSURE,
 } TypeCommand;
@@ -113,6 +114,9 @@ struct PacketLedState {
   uint8_t  R;
   uint8_t  G;
   uint8_t  B;
+  #ifdef DETECTED_SENSOR
+    uint8_t ModeWork;
+  #endif
 };
 
 struct PacketDeviceConfig {
@@ -283,6 +287,10 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
     Packet.G          = g1;  
     Packet.B          = b1;    
 
+    #ifdef DETECTED_SENSOR
+      Packet.ModeWork = Automode;
+    #endif
+
     uint16_t DataSize = sizeof(Packet);  // Размер структуры
     SendPacket((uint8_t*)&Packet, DataSize);
   }
@@ -307,6 +315,9 @@ void SendPacketDeviceConfig()
     Packet.IsDetectedSensor = IsDetectedSensor;
     Packet.IsLightSensor    = IsLightSensor;
   #endif
+  #ifdef PANELCONTROL
+    Packet.DeviceType       = CONTROLPANEL;
+  #endif
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
@@ -328,6 +339,9 @@ void SendPacketStart()
   #endif
   #ifdef CONTROLLER_LED
     Packet.DeviceType = LEDCONTROL;
+  #endif
+  #ifdef PANELCONTROL
+    Packet.DeviceType = CONTROLPANEL;
   #endif
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
@@ -489,6 +503,16 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             WriteSettings();
             FlagOneOn = true;
             break;
+          }
+
+          case SET_MODE_WORK:
+          {
+            uint8_t Mode = ReceivedPacket.CommandData;
+            if (Mode == 1)  Automode = true;
+            else            Automode = false;
+
+            Settings.ModeWork = Automode;
+            WriteSettings();
           }
         #endif
       }

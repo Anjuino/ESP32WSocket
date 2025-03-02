@@ -6,7 +6,7 @@
 #include <EEPROM.h>
 
 #ifdef ESP32
-  SET_LOOP_TASK_STACK_SIZE(50*1024); // Задаем размер стека для Loop
+  SET_LOOP_TASK_STACK_SIZE(20*1024); // Задаем размер стека для Loop
   #include <WiFi.h>
 #else
   #include <ESP8266WiFi.h>
@@ -15,10 +15,11 @@
 #include <WebSocketsClient.h>
 WebSocketsClient webSocket;
 
-#define CONTROLLER_TELEMETRY
-#define TEMPERATURE_SENSOR
+/////////////////////////////////////////////////////////////КОНТРОЛЛЕР ТЕЛЕМЕТРИИ/////////////////////////////////////////////////////////////
+//#define CONTROLLER_TELEMETRY
+//#define TEMPERATURE_SENSOR
 //#define CO2_SENSOR
-#define PRESSURE_SENSOR
+//#define PRESSURE_SENSOR
 bool IsTempAndHumSensor = true;
 bool IsCO2Sensor        = false;
 bool IsPressureSensor   = true;
@@ -68,6 +69,7 @@ bool IsInaSensor        = false;
   }
 #endif
 
+/////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
 //#define CONTROLLER_LED
 //#define DETECTED_SENSOR
 //#define LIGHT_SENSOR
@@ -78,10 +80,30 @@ bool IsLightSensor    = false;
   TaskHandle_t Task1;
   #ifdef DETECTED_SENSOR
     // ТУТ ДЛЯ ДАТЧИКА ДВИЖЕНИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
+    TaskHandle_t TaskDetected;
+    bool Automode = true;    // это с сервера и в настройках должно ли вообще работать освещение в авто режиме
+    bool IsDetectedMove = false;
+    pinMode(33, INPUT_PULLUP);
+
+    void IRAM_ATTR MoveDetected() {
+      IsDetectedMove = true;
+    }
+
+    attachInterrupt(33, MoveDetected, RISING);
   #endif
   #ifdef LIGHT_SENSOR
+    analogReadResolution(12);
     // ТУТ ДЛЯ ДАТЧИКА ОСВЕЩЕИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
+    uint16_t ReadLight () {
+      return analogRead(36);
+    }
   #endif
+#endif
+
+/////////////////////////////////////////////////////////////КОНТРОЛЛЕР ПАНЕЛЬ УПРАВЛЕНИЯ/////////////////////////////////////////////////////////////
+//#define PANELCONTROL
+#ifdef PANELCONTROL
+
 #endif
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
