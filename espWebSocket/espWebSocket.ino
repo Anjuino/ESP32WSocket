@@ -39,8 +39,13 @@ void setup() {
         NULL,         
         1,            
         &TaskDetected,       
-        1); 
+        1);
+      pinMode(1, INPUT_PULLUP);
+      attachInterrupt(1, MoveDetected, RISING);   
     #endif
+    #ifdef LIGHT_SENSOR
+      analogReadResolution(12);
+    #endif  
   #endif
 }
 

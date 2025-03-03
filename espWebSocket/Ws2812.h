@@ -15,7 +15,7 @@
 #define STATIC     249
 #define OFF        250
 
-#define PIN 27 // esp32
+#define PIN 4 // esp32
 
 
 uint16_t CountLed = 55;

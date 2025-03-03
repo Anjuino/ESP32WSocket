@@ -70,9 +70,9 @@ bool IsInaSensor        = false;
 #endif
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
-//#define CONTROLLER_LED
-//#define DETECTED_SENSOR
-//#define LIGHT_SENSOR
+#define CONTROLLER_LED
+#define DETECTED_SENSOR
+#define LIGHT_SENSOR
 bool IsDetectedSensor = false;
 bool IsLightSensor    = false;
 #ifdef CONTROLLER_LED
@@ -83,19 +83,16 @@ bool IsLightSensor    = false;
     TaskHandle_t TaskDetected;
     bool Automode = true;    // это с сервера и в настройках должно ли вообще работать освещение в авто режиме
     bool IsDetectedMove = false;
-    pinMode(33, INPUT_PULLUP);
 
     void IRAM_ATTR MoveDetected() {
       IsDetectedMove = true;
     }
 
-    attachInterrupt(33, MoveDetected, RISING);
   #endif
   #ifdef LIGHT_SENSOR
-    analogReadResolution(12);
     // ТУТ ДЛЯ ДАТЧИКА ОСВЕЩЕИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
     uint16_t ReadLight () {
-      return analogRead(36);
+      return analogRead(2);
     }
   #endif
 #endif
