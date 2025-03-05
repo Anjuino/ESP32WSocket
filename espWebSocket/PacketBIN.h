@@ -184,7 +184,7 @@ void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
     Humidity    = bme.readHumidity();
     Temperature = bme.readTemperature();
   #else
-    IsSensor = false;
+    //IsSensor = false;
   #endif    
 
   PacketTemp_Hum Packet;

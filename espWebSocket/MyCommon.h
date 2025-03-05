@@ -16,19 +16,19 @@
 WebSocketsClient webSocket;
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР ТЕЛЕМЕТРИИ/////////////////////////////////////////////////////////////
-//#define CONTROLLER_TELEMETRY
-//#define TEMPERATURE_SENSOR
-//#define CO2_SENSOR
+#define CONTROLLER_TELEMETRY
+#define TEMPERATURE_SENSOR
+#define CO2_SENSOR
 //#define PRESSURE_SENSOR
 bool IsTempAndHumSensor = true;
-bool IsCO2Sensor        = false;
-bool IsPressureSensor   = true;
+bool IsCO2Sensor        = true;
+bool IsPressureSensor   = false;
 bool IsInaSensor        = false;
 
 #ifdef CONTROLLER_TELEMETRY
   #ifdef TEMPERATURE_SENSOR
-    //#define DHT22Sensor
-    #define BME280Sensor
+    #define DHT22Sensor
+    //#define BME280Sensor
     ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
   #endif
 
@@ -62,7 +62,7 @@ bool IsInaSensor        = false;
   void CallibrateMQ135 ()
   {
     float R = 1.00;
-    while (gasSensor.getPPM() < 400) {
+    while ((gasSensor.getPPM() < 400) || gasSensor.getPPM() > 2500) {
       R = R + 1.11;
       gasSensor.SetRZero(R);
     }
@@ -70,9 +70,9 @@ bool IsInaSensor        = false;
 #endif
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
-#define CONTROLLER_LED
-#define DETECTED_SENSOR
-#define LIGHT_SENSOR
+//#define CONTROLLER_LED
+//#define DETECTED_SENSOR
+//#define LIGHT_SENSOR
 bool IsDetectedSensor = false;
 bool IsLightSensor    = false;
 #ifdef CONTROLLER_LED
@@ -99,9 +99,7 @@ bool IsLightSensor    = false;
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР ПАНЕЛЬ УПРАВЛЕНИЯ/////////////////////////////////////////////////////////////
 //#define PANELCONTROL
-#ifdef PANELCONTROL
 
-#endif
 
 //////////////////////////////// WIFI НАСТРОЙКИ ///////////////////////////////////////
 #ifdef WORK
