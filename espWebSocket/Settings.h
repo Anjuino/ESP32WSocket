@@ -9,14 +9,20 @@ struct DeviceSettings {
   #ifdef CONTROLLER_TELEMETRY
     #ifdef TEMPERATURE_SENSOR
       uint32_t TimerTempAndHum;
+      bool AlertTempAndHumIsOn;
+      uint16_t MaxLimitT;
+      uint16_t MinLimitT;
     #endif
 
     #ifdef CO2_SENSOR
       uint32_t TimerCO2;
+      bool AlertCO2IsOn;
+      uint16_t MaxLimitCO2;
     #endif
 
     #ifdef PRESSURE_SENSOR
       uint32_t TimerPressure;
+      bool AlertPressureIsOn;
     #endif
   #endif
 
@@ -54,6 +60,21 @@ void GetSettings ()
         Settings.TimerTempAndHum = 60000;
         NeedUpdate = true;
       }
+
+      TempAndHumAlert = Settings.AlertTempAndHumIsOn;
+
+      MaxLimitT = Settings.MaxLimitT;
+      if (MaxLimitT == 32767 || MaxLimitT == 0) {
+        MaxLimitT = 30;
+        Settings.MaxLimitT = MaxLimitT;
+        NeedUpdate = true;
+      }
+
+      if (MinLimitT == 32767 || MinLimitT == 0) {
+        MinLimitT = 10;
+        Settings.MinLimitT = MinLimitT;
+        NeedUpdate = true;
+      }
     #endif 
 
     #ifdef CO2_SENSOR
@@ -61,6 +82,15 @@ void GetSettings ()
       if (TimerCO2 == 4294967295 || TimerCO2 == 0) {
         TimerCO2 = 600000;
         Settings.TimerCO2 = TimerCO2;
+        NeedUpdate = true;
+      }
+
+      CO2Alert = Settings.AlertCO2IsOn;
+
+      MaxLimitCO2 = Settings.MaxLimitCO2;
+      if (MaxLimitCO2 == 32767 || MaxLimitCO2 == 0) {
+        MaxLimitCO2 = 900;
+        Settings.MaxLimitCO2 = MaxLimitCO2;
         NeedUpdate = true;
       }
     #endif
@@ -72,6 +102,8 @@ void GetSettings ()
         Settings.TimerPressure = TimerPressure;
         NeedUpdate = true;
       }
+      
+      PressureAlert = Settings.AlertPressureIsOn;
     #endif  
   #endif
 

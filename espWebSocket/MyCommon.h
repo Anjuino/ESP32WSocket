@@ -64,7 +64,7 @@ bool IsInaSensor        = false;
     float R = 1.00;
     while ((gasSensor.getPPM() < 400) || gasSensor.getPPM() > 2500) {
       R = R + 1.11;
-      gasSensor.SetRZero(R);
+      //gasSensor.SetRZero(R);
     }
   }
 #endif
@@ -129,15 +129,28 @@ const uint16_t PORT = 8888;
 ////////////////////////////ПРОЧИЕ НАСТРОЙКИ/////////////////////////////////////////
 #ifdef TEMPERATURE_SENSOR
   uint64_t Timer1   = millis() + 20000;
+  uint32_t TimerTempAndHumAlert = 0;
   uint32_t TimerTempAndHum   = 0;
+
+  bool TempAndHumAlert;
+
+  uint16_t MaxLimitT;
+  uint16_t MinLimitT;
 #endif
 
 #ifdef CO2_SENSOR
   uint64_t Timer2   = millis() + 20000;
+  uint32_t TimerCO2Alert = 0;
   uint32_t TimerCO2 = 0;
+
+  bool CO2Alert;
+  uint16_t MaxLimitCO2;
 #endif
 
 #ifdef PRESSURE_SENSOR
   uint64_t Timer3 = millis() + 20000;
+  uint32_t TimerPressureAlert = 0;
   uint32_t TimerPressure = 0;
+
+  bool PressureAlert;
 #endif

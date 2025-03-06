@@ -100,6 +100,17 @@ void loop() {
     #endif  
 
     #ifdef CO2_SENSOR
+      
+      if (CO2Alert) {                             // Если включена тревога и при превышении порогового значения С02, то будет отправляться пакет с признаком тревоги
+        if (millis() > TimerCO2Alert) {
+          TimerCO2Alert = millis() + 60000;
+          if (gasSensor.getPPM() > MaxLimitCO2) {
+            TimerCO2Alert = millis() + 600000;    // Перевожу время на 10 минут вперед, чтобы не спамить сервер
+            SendPacketCO2(false, true);
+          }
+        }
+      }
+
       if (millis() > Timer2) {
         Timer2 = millis() + TimerCO2;
         SendPacketCO2();

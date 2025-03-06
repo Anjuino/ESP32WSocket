@@ -13,6 +13,8 @@ enum {
   ////////////////// Контроллер для светодоидной ленты
   DATA_LED_STATE = 10,
   DEVICE_CONFIG  = 20,
+  STATE_ALERT = 30,
+  DATA_LIMIT_VALUE,
 } TypePacketSend;
 
 // Пакеты с сервера
@@ -52,6 +54,11 @@ enum {
   SET_MODE_WORK,
   /////////////////////// Для телеметрии //////////////////////////
   SET_TIME_PRESSURE,
+  //////////////////////  Для тревог //////////////////////////////
+  SET_ALERT,
+  GET_ALERT,
+  SET_LIMIT,
+  GET_LIMIT,
 } TypeCommand;
 
 
@@ -73,7 +80,8 @@ struct PacketTemp_Hum {
   uint8_t  Packet;     
   uint8_t  UID;
   bool IsNeedWriteDataBase;
-  bool IsSensor;    
+  bool IsSensor;
+  bool IsAlarm;      
   float Temperature;
   float Humidity;  
 };
@@ -82,7 +90,8 @@ struct PacketCO2 {
   uint8_t  Packet; 
   uint8_t  UID;
   bool IsNeedWriteDataBase;
-  bool IsSensor;       
+  bool IsSensor;
+  bool IsAlarm;         
   uint16_t CO2ppm;
 };
 
@@ -90,7 +99,8 @@ struct PacketPressure {
   uint8_t  Packet; 
   uint8_t  UID;
   bool IsNeedWriteDataBase;
-  bool IsSensor;       
+  bool IsSensor;
+  bool IsAlarm;         
   float Pressure;
 };
 
@@ -103,6 +113,18 @@ struct PacketTimerSensor {
   uint8_t  Packet; 
   uint8_t UID;
   uint32_t TimerSensor;
+};
+
+struct PacketDataAlert {
+  uint8_t  Packet; 
+  uint8_t UID;
+  bool AlertIsOn;
+};
+
+struct PacketDataLimit {
+  uint8_t  Packet; 
+  uint8_t UID;
+  uint16_t LimitValue;
 };
 
 struct PacketLedState {
@@ -145,11 +167,11 @@ void SendPacket(uint8_t *hData, uint16_t Size)
   webSocket.sendBIN(Data, Size);       // Отправялю пакет на сервер
 }
 
-void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
+void SendPacketTepmHum(bool IsNeedWriteDataBase = true, bool IsAlarm = false)
 { 
   float Humidity    = -1;    
   float Temperature = -273;
-  bool IsSensor;
+  bool IsSensor = false;
   #ifdef DHT22Sensor
     IsSensor = true;
     uint8_t GetTry = 0;
@@ -174,17 +196,12 @@ void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
       } 
       GetTry++;
     }
-
-  #else
-    IsSensor = false;
   #endif
 
   #ifdef BME280Sensor
     IsSensor = true;
     Humidity    = bme.readHumidity();
     Temperature = bme.readTemperature();
-  #else
-    //IsSensor = false;
   #endif    
 
   PacketTemp_Hum Packet;
@@ -193,6 +210,7 @@ void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
   Packet.UID                 = Settings.UID;
   Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
   Packet.IsSensor            = IsSensor;
+  Packet.IsAlarm             = IsAlarm; 
   Packet.Temperature         = Temperature;
   Packet.Humidity            = Humidity;
 
@@ -200,18 +218,14 @@ void SendPacketTepmHum(bool IsNeedWriteDataBase = true)
   SendPacket((uint8_t*)&Packet, DataSize);
 }
 
-void SendPacketCO2(bool IsNeedWriteDataBase = true) 
+void SendPacketCO2(bool IsNeedWriteDataBase = true, bool IsAlarm = false) 
 {
   uint16_t CO2ppm = 0;
-  bool IsSensor;
+  bool IsSensor = false;
   
   #ifdef MQ135Sensor
     IsSensor = true;
-    //CO2ppm = random(400, 700);
-    Serial.println(gasSensor.getRZero());
     CO2ppm = gasSensor.getPPM();
-  #else
-    IsSensor = false;
   #endif  
 
   PacketCO2 Packet;
@@ -220,22 +234,21 @@ void SendPacketCO2(bool IsNeedWriteDataBase = true)
   Packet.UID                 = Settings.UID;
   Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
   Packet.IsSensor            = IsSensor;
+  Packet.IsAlarm             = IsAlarm; 
   Packet.CO2ppm              = CO2ppm;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
 }
 
-void SendPacketPressure(bool IsNeedWriteDataBase = true) 
+void SendPacketPressure(bool IsNeedWriteDataBase = true, bool IsAlarm = false) 
 {
   float Pressure = 0;
-  bool IsSensor;
+  bool IsSensor = false;
   
   #ifdef BME280Sensor
     IsSensor = true;
     Pressure    = bme.readPressure() / 133.3;
-  #else
-    IsSensor = false;
   #endif    
 
   PacketPressure Packet;
@@ -244,7 +257,61 @@ void SendPacketPressure(bool IsNeedWriteDataBase = true)
   Packet.UID                 = Settings.UID;
   Packet.IsNeedWriteDataBase = IsNeedWriteDataBase;
   Packet.IsSensor            = IsSensor;
+  Packet.IsAlarm             = IsAlarm; 
   Packet.Pressure            = Pressure;
+
+  uint16_t DataSize = sizeof(Packet);  // Размер структуры
+  SendPacket((uint8_t*)&Packet, DataSize);
+}
+
+void SendPacketStateAlert(uint32_t TypeSensor)
+{
+  bool Alert;
+  #ifdef TEMPERATURE_SENSOR
+    if(TypeSensor == 1) Alert = Settings.AlertTempAndHumIsOn;
+  #endif
+  #ifdef CO2_SENSOR
+    if(TypeSensor == 2) Alert = Settings.AlertCO2IsOn;
+  #endif
+  #ifdef PRESSURE_SENSOR
+    if(TypeSensor == 4) Alert = Settings.AlertPressureIsOn;
+  #endif
+
+  PacketDataAlert Packet;
+
+  Packet.Packet              = STATE_ALERT;
+  Packet.UID                 = Settings.UID;
+  Packet.AlertIsOn           = Alert;
+
+  uint16_t DataSize = sizeof(Packet);  // Размер структуры
+  SendPacket((uint8_t*)&Packet, DataSize);
+}
+
+void SendPacketDataLimit(uint8_t TypeSensor, bool TypeLimit)
+{
+  uint16_t LimitValue = 1;  
+  #ifdef TEMPERATURE_SENSOR
+    if(TypeSensor == 1) { 
+      if (TypeLimit) LimitValue = MaxLimitT;
+      else           LimitValue = MinLimitT;
+    }
+  #endif
+  #ifdef CO2_SENSOR
+    if(TypeSensor == 2) {
+      if (TypeLimit) LimitValue = MaxLimitCO2;
+    }
+  #endif
+  #ifdef PRESSURE_SENSOR
+    if(TypeSensor == 4) { 
+      delay(1);
+    }
+  #endif
+
+  PacketDataLimit Packet;
+
+  Packet.Packet              = DATA_LIMIT_VALUE;
+  Packet.UID                 = Settings.UID;
+  Packet.LimitValue          = LimitValue;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
   SendPacket((uint8_t*)&Packet, DataSize);
@@ -260,7 +327,7 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
     if(TypeSensor == 2) Timer = Settings.TimerCO2;
   #endif
   #ifdef PRESSURE_SENSOR
-    if(TypeSensor == 3) Timer = Settings.TimerPressure;
+    if(TypeSensor == 4) Timer = Settings.TimerPressure;
   #endif
 
   PacketTimerSensor Packet;
@@ -422,6 +489,101 @@ void ParsePacket(uint8_t * payload, uint64_t length)
           case GET_TIMER_SENSOR:
           {
             if (ReceivedPacket.CommandData) SendPacketTimerSensor(ReceivedPacket.CommandData);
+            break;
+          }
+
+          case GET_ALERT:
+          {
+            if (ReceivedPacket.CommandData) SendPacketStateAlert(ReceivedPacket.CommandData);
+            break;
+          }
+
+          case SET_ALERT:
+          {
+            if (ReceivedPacket.CommandData) {
+              uint32_t Value = ReceivedPacket.CommandData;
+              uint8_t TypeSensor = (Value >> 24) & 0xFF;       // Выделяем старший байт тип сенсора
+              bool AlertIsOn = (Value >> 16) & 0xFF;           // Выделяем следующий байт тревога включена или нет
+              
+              #ifdef TEMPERATURE_SENSOR
+                if (TypeSensor == 1) {
+                  TempAndHumAlert = AlertIsOn;
+                  Settings.AlertTempAndHumIsOn = TempAndHumAlert;
+                }
+              #endif
+
+              #ifdef CO2_SENSOR
+                if (TypeSensor == 2) {
+                  CO2Alert = AlertIsOn;
+                  Settings.AlertCO2IsOn = CO2Alert;
+                }
+              #endif
+
+              #ifdef PRESSURE_SENSOR
+                if (TypeSensor == 4) {
+                  PressureAlert = AlertIsOn;
+                  Settings.AlertPressureIsOn = PressureAlert;
+                }
+              #endif
+
+            }
+            break;
+          }
+          
+          case GET_LIMIT:
+          {
+            if (ReceivedPacket.CommandData) {
+              uint32_t Value = ReceivedPacket.CommandData;
+
+              uint8_t TypeSensor = (Value >> 24) & 0xFF;       // Выделяем старший байт тип сенсора
+              bool TypeLimit = (Value >> 16) & 0xFF;           // Выделяем следующий байт тип порога минимальный или максимальный
+          
+              SendPacketDataLimit(TypeSensor, TypeLimit);
+            }
+            break;
+          }
+
+          case SET_LIMIT:
+          {
+            if (ReceivedPacket.CommandData) {
+              uint32_t Value = ReceivedPacket.CommandData;
+
+              uint8_t TypeSensor = (Value >> 24) & 0xFF;       // Выделяем старший байт тип сенсора
+              bool TypeLimit = (Value >> 16) & 0xFF;           // Выделяем следующий байт тип порога минимальный или максимальный
+              uint16_t LimitValue = Value & 0xFFFF;            // Извлекаем последние 16 бит (2 байта)             
+
+              #ifdef TEMPERATURE_SENSOR
+                if (TypeSensor == 1) {
+                  if (TypeLimit) {
+                    MaxLimitT = LimitValue;
+                    Settings.MaxLimitT = MaxLimitT;
+                  }
+                  else {
+                    MinLimitT = LimitValue;
+                    Settings.MinLimitT = MinLimitT;
+                  }
+                  WriteSettings();
+                }
+              #endif  
+
+              #ifdef CO2_SENSOR
+                if (TypeSensor == 2) {
+                  if (TypeLimit) {
+                    MaxLimitCO2 = LimitValue;
+                    Settings.MaxLimitCO2 = MaxLimitCO2;
+
+                    Serial.println(Settings.MaxLimitCO2);
+                  }
+                  WriteSettings();
+                }
+              #endif  
+
+              #ifdef PRESSURE_SENSOR
+                if (TypeSensor == 4) {
+
+                }
+              #endif
+            }
             break;
           }
 
