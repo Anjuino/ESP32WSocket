@@ -134,8 +134,8 @@ const uint16_t PORT = 8888;
 
   bool TempAndHumAlert;
 
-  uint16_t MaxLimitT;
-  uint16_t MinLimitT;
+  int16_t MaxLimitT;
+  int16_t MinLimitT;
 #endif
 
 #ifdef CO2_SENSOR
@@ -144,7 +144,7 @@ const uint16_t PORT = 8888;
   uint32_t TimerCO2 = 0;
 
   bool CO2Alert;
-  uint16_t MaxLimitCO2;
+  int16_t MaxLimitCO2;
 #endif
 
 #ifdef PRESSURE_SENSOR

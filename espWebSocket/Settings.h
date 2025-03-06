@@ -10,14 +10,14 @@ struct DeviceSettings {
     #ifdef TEMPERATURE_SENSOR
       uint32_t TimerTempAndHum;
       bool AlertTempAndHumIsOn;
-      uint16_t MaxLimitT;
-      uint16_t MinLimitT;
+      int16_t MaxLimitT;
+      int16_t MinLimitT;
     #endif
 
     #ifdef CO2_SENSOR
       uint32_t TimerCO2;
       bool AlertCO2IsOn;
-      uint16_t MaxLimitCO2;
+      int16_t MaxLimitCO2;
     #endif
 
     #ifdef PRESSURE_SENSOR

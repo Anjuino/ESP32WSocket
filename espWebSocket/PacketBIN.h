@@ -124,7 +124,7 @@ struct PacketDataAlert {
 struct PacketDataLimit {
   uint8_t  Packet; 
   uint8_t UID;
-  uint16_t LimitValue;
+  int16_t LimitValue;
 };
 
 struct PacketLedState {
@@ -289,7 +289,7 @@ void SendPacketStateAlert(uint32_t TypeSensor)
 
 void SendPacketDataLimit(uint8_t TypeSensor, bool TypeLimit)
 {
-  uint16_t LimitValue = 1;  
+  int16_t LimitValue = 1;  
   #ifdef TEMPERATURE_SENSOR
     if(TypeSensor == 1) { 
       if (TypeLimit) LimitValue = MaxLimitT;
@@ -550,7 +550,7 @@ void ParsePacket(uint8_t * payload, uint64_t length)
 
               uint8_t TypeSensor = (Value >> 24) & 0xFF;       // Выделяем старший байт тип сенсора
               bool TypeLimit = (Value >> 16) & 0xFF;           // Выделяем следующий байт тип порога минимальный или максимальный
-              uint16_t LimitValue = Value & 0xFFFF;            // Извлекаем последние 16 бит (2 байта)             
+              int16_t LimitValue = Value & 0xFFFF;            // Извлекаем последние 16 бит (2 байта)             
 
               #ifdef TEMPERATURE_SENSOR
                 if (TypeSensor == 1) {
