@@ -51,10 +51,10 @@ enum {
   SET_MODE,
   LED_GET_STATE,
   SET_LED_COUNT,
-  SET_MODE_WORK,
   /////////////////////// Для телеметрии //////////////////////////
   SET_TIME_PRESSURE,
   //////////////////////  Для тревог //////////////////////////////
+  SET_MODE_WORK,
   SET_ALERT,
   GET_ALERT,
   SET_LIMIT,
@@ -118,12 +118,15 @@ struct PacketTimerSensor {
 struct PacketDataAlert {
   uint8_t  Packet; 
   uint8_t UID;
+  uint8_t TypeSensor;
   bool AlertIsOn;
 };
 
 struct PacketDataLimit {
   uint8_t  Packet; 
   uint8_t UID;
+  uint8_t TypeSensor;
+  uint8_t LimitType;
   int16_t LimitValue;
 };
 
@@ -281,6 +284,7 @@ void SendPacketStateAlert(uint32_t TypeSensor)
 
   Packet.Packet              = STATE_ALERT;
   Packet.UID                 = Settings.UID;
+  Packet.TypeSensor          = TypeSensor;
   Packet.AlertIsOn           = Alert;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
@@ -311,6 +315,8 @@ void SendPacketDataLimit(uint8_t TypeSensor, bool TypeLimit)
 
   Packet.Packet              = DATA_LIMIT_VALUE;
   Packet.UID                 = Settings.UID;
+  Packet.TypeSensor          = TypeSensor;
+  Packet.LimitType           = TypeLimit;
   Packet.LimitValue          = LimitValue;
 
   uint16_t DataSize = sizeof(Packet);  // Размер структуры
@@ -516,6 +522,7 @@ void ParsePacket(uint8_t * payload, uint64_t length)
                 if (TypeSensor == 2) {
                   CO2Alert = AlertIsOn;
                   Settings.AlertCO2IsOn = CO2Alert;
+                  Serial.println(CO2Alert);
                 }
               #endif
 
@@ -526,6 +533,7 @@ void ParsePacket(uint8_t * payload, uint64_t length)
                 }
               #endif
 
+              WriteSettings();
             }
             break;
           }

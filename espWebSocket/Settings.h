@@ -58,22 +58,26 @@ void GetSettings ()
       if (TimerTempAndHum   == 4294967295 || TimerTempAndHum == 0) {
         TimerTempAndHum   = 60000;
         Settings.TimerTempAndHum = 60000;
+        Serial.println("Вызвал перезапись ВРЕМЯ Т");
         NeedUpdate = true;
       }
 
       TempAndHumAlert = Settings.AlertTempAndHumIsOn;
 
       MaxLimitT = Settings.MaxLimitT;
-      if (MaxLimitT == 32767 || MaxLimitT == 0) {
+      if (MaxLimitT == 32767 || MaxLimitT == -1) {
         MaxLimitT = 30;
         Settings.MaxLimitT = MaxLimitT;
         NeedUpdate = true;
+        Serial.println("Вызвал перезапись МАКС Т");
       }
 
-      if (MinLimitT == 32767 || MinLimitT == 0) {
+      MinLimitT = Settings.MinLimitT;
+      if (MinLimitT == 32767 || MinLimitT == -1) {
         MinLimitT = 10;
         Settings.MinLimitT = MinLimitT;
         NeedUpdate = true;
+        Serial.println("Вызвал перезапись МИН Т");
       }
     #endif 
 
@@ -83,15 +87,17 @@ void GetSettings ()
         TimerCO2 = 600000;
         Settings.TimerCO2 = TimerCO2;
         NeedUpdate = true;
+        Serial.println("Вызвал перезапись ВРЕМЯ СО2");
       }
 
       CO2Alert = Settings.AlertCO2IsOn;
 
       MaxLimitCO2 = Settings.MaxLimitCO2;
-      if (MaxLimitCO2 == 32767 || MaxLimitCO2 == 0) {
+      if (MaxLimitCO2 == 32767 || MaxLimitCO2 == -1) {
         MaxLimitCO2 = 900;
         Settings.MaxLimitCO2 = MaxLimitCO2;
         NeedUpdate = true;
+        Serial.println("Вызвал перезапись МАКС СО2");
       }
     #endif
 
@@ -123,8 +129,8 @@ void GetSettings ()
     #endif
   #endif
 
-  if (NeedUpdate = true) {
-    Serial.println("Перезаписываю настройки");
+  if (NeedUpdate) {
+    Serial.println("Перезаписываю настройкиииииии");
     WriteSettings ();
   }  
 }

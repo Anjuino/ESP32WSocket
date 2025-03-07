@@ -1,5 +1,5 @@
-#define HOME
-//#define WORK
+//#define HOME
+#define WORK
 
 #include <stdint.h>
 #include "Base64.h"
@@ -64,7 +64,7 @@ bool IsInaSensor        = false;
     float R = 1.00;
     while ((gasSensor.getPPM() < 400) || gasSensor.getPPM() > 2500) {
       R = R + 1.11;
-      //gasSensor.SetRZero(R);
+      gasSensor.SetRZero(R);
     }
   }
 #endif
@@ -143,7 +143,7 @@ const uint16_t PORT = 8888;
   uint32_t TimerCO2Alert = 0;
   uint32_t TimerCO2 = 0;
 
-  bool CO2Alert;
+  uint8_t CO2Alert;
   int16_t MaxLimitCO2;
 #endif
 
