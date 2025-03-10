@@ -558,7 +558,7 @@ void ParsePacket(uint8_t * payload, uint64_t length)
 
               uint8_t TypeSensor = (Value >> 24) & 0xFF;       // Выделяем старший байт тип сенсора
               bool TypeLimit = (Value >> 16) & 0xFF;           // Выделяем следующий байт тип порога минимальный или максимальный
-              int16_t LimitValue = Value & 0xFFFF;            // Извлекаем последние 16 бит (2 байта)             
+              int16_t LimitValue = Value & 0xFFFF;             // Извлекаем последние 16 бит (2 байта)             
 
               #ifdef TEMPERATURE_SENSOR
                 if (TypeSensor == 1) {

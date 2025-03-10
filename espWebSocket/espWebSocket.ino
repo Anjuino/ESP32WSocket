@@ -87,19 +87,40 @@ void setup() {
   #endif
 #endif
 
-
-void AlertCO2 (void) {
-  if (CO2Alert) {                             // Если включена тревога и при превышении порогового значения СO2, то будет отправляться пакет с признаком тревоги
-    if (millis() > TimerCO2Alert) {
-      TimerCO2Alert = millis() + 60000;
-      if (gasSensor.getPPM() > MaxLimitCO2) {
-        Serial.println("Тревога по Co2");
-        TimerCO2Alert = millis() + 600000;    // Перевожу время на 10 минут вперед, чтобы не спамить сервер
-        SendPacketCO2(false, true);
+#ifdef TEMPERATURE_SENSOR
+  void AlertTemp (void) {
+    if (TempAndHumAlert) {
+      if (millis() > TimerTempAndHumAlert) {
+        TimerTempAndHumAlert = millis() + 60000;
+        #ifdef DHT22Sensor
+          if (dht22.getTemperature() > MaxLimitT || dht22.getTemperature() < MinLimitT) {
+        #endif
+        #ifdef BME280Sensor
+          if (bme.readTemperature() > MaxLimitT || bme.readTemperature() < MinLimitT) {
+        #endif  
+          Serial.println("Тревога по Температуре");
+          TimerTempAndHumAlert = millis() + 600000;    // Перевожу время на 10 минут вперед, чтобы не спамить сервер
+          SendPacketTepmHum(false, true);
+        }
       }
     }
   }
-}
+#endif
+
+#ifdef CO2_SENSOR
+  void AlertCO2 (void) {
+    if (CO2Alert) {                             // Если включена тревога и при превышении порогового значения СO2, то будет отправляться пакет с признаком тревоги
+      if (millis() > TimerCO2Alert) {
+        TimerCO2Alert = millis() + 60000;
+        if (gasSensor.getPPM() > MaxLimitCO2) {
+          Serial.println("Тревога по Co2");
+          TimerCO2Alert = millis() + 600000;    // Перевожу время на 10 минут вперед, чтобы не спамить сервер
+          SendPacketCO2(false, true);
+        }
+      }
+    }
+  }
+#endif
 
 void loop() {
 
@@ -107,6 +128,8 @@ void loop() {
 
   #ifdef CONTROLLER_TELEMETRY
     #ifdef TEMPERATURE_SENSOR
+
+      AlertTemp();
       if (millis() > Timer1) {
         Timer1 = millis() + TimerTempAndHum;
         SendPacketTepmHum();

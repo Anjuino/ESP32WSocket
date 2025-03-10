@@ -1,5 +1,5 @@
-//#define HOME
-#define WORK
+#define HOME
+//#define WORK
 
 #include <stdint.h>
 #include "Base64.h"
@@ -57,15 +57,27 @@ bool IsInaSensor        = false;
 #ifdef MQ135Sensor
   #include <MQ135.h>
   // Делал калибровку на свежем воздухе
-  uint64_t TimerCallibrate = millis() + 15000;
+  uint64_t TimerCallibrate = millis() + 60000;
   MQ135 gasSensor = MQ135(A0, 26.33);
   void CallibrateMQ135 ()
   {
     float R = 1.00;
-    while ((gasSensor.getPPM() < 400) || gasSensor.getPPM() > 2500) {
-      R = R + 1.11;
-      gasSensor.SetRZero(R);
+    if (gasSensor.getPPM() < 400) {
+      Serial.println(gasSensor.getPPM());
+      while ((gasSensor.getPPM() < 400)) {
+        R = R + 1.11;
+        gasSensor.SetRZero(R);
+      }
     }
+
+    if (gasSensor.getPPM() > 3000) {
+      while (true) {
+        R = R + 1.11;
+        gasSensor.SetRZero(R);
+        if (gasSensor.getPPM() > 2500) break; 
+      }
+    }
+
   }
 #endif
 
@@ -132,7 +144,7 @@ const uint16_t PORT = 8888;
   uint32_t TimerTempAndHumAlert = 0;
   uint32_t TimerTempAndHum   = 0;
 
-  bool TempAndHumAlert;
+  uint8_t TempAndHumAlert;
 
   int16_t MaxLimitT;
   int16_t MinLimitT;
@@ -152,5 +164,5 @@ const uint16_t PORT = 8888;
   uint32_t TimerPressureAlert = 0;
   uint32_t TimerPressure = 0;
 
-  bool PressureAlert;
+  uint8_t PressureAlert;
 #endif

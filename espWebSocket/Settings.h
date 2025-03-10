@@ -66,7 +66,7 @@ void GetSettings ()
 
       MaxLimitT = Settings.MaxLimitT;
       if (MaxLimitT == 32767 || MaxLimitT == -1) {
-        MaxLimitT = 30;
+        MaxLimitT = 35;
         Settings.MaxLimitT = MaxLimitT;
         NeedUpdate = true;
         Serial.println("Вызвал перезапись МАКС Т");
