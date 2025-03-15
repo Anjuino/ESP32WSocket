@@ -16,12 +16,12 @@
 WebSocketsClient webSocket;
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР ТЕЛЕМЕТРИИ/////////////////////////////////////////////////////////////
-#define CONTROLLER_TELEMETRY
-#define TEMPERATURE_SENSOR
-#define CO2_SENSOR
+//#define CONTROLLER_TELEMETRY
+//#define TEMPERATURE_SENSOR
+//#define CO2_SENSOR
 //#define PRESSURE_SENSOR
-bool IsTempAndHumSensor = true;
-bool IsCO2Sensor        = true;
+bool IsTempAndHumSensor = false;
+bool IsCO2Sensor        = false;
 bool IsPressureSensor   = false;
 bool IsInaSensor        = false;
 
@@ -82,18 +82,18 @@ bool IsInaSensor        = false;
 #endif
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
-//#define CONTROLLER_LED
-//#define DETECTED_SENSOR
-//#define LIGHT_SENSOR
-bool IsDetectedSensor = false;
-bool IsLightSensor    = false;
+#define CONTROLLER_LED
+#define DETECTED_SENSOR
+#define LIGHT_SENSOR
+bool IsDetectedSensor = true;
+bool IsLightSensor    = true;
 #ifdef CONTROLLER_LED
   #include "Ws2812.h"
   TaskHandle_t Task1;
   #ifdef DETECTED_SENSOR
     // ТУТ ДЛЯ ДАТЧИКА ДВИЖЕНИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
     TaskHandle_t TaskDetected;
-    bool Automode = true;    // это с сервера и в настройках должно ли вообще работать освещение в авто режиме
+    bool Automode = false;    // это с сервера и в настройках должно ли вообще работать освещение в авто режиме
     bool IsDetectedMove = false;
 
     void IRAM_ATTR MoveDetected() {

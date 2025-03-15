@@ -12,6 +12,7 @@ enum {
   DATA_PRESSURE,
   ////////////////// Контроллер для светодоидной ленты
   DATA_LED_STATE = 10,
+  DATA_LED_DETECTED_WORK = 11,
   DEVICE_CONFIG  = 20,
   STATE_ALERT = 30,
   DATA_LIMIT_VALUE,
@@ -54,11 +55,12 @@ enum {
   /////////////////////// Для телеметрии //////////////////////////
   SET_TIME_PRESSURE,
   //////////////////////  Для тревог //////////////////////////////
-  SET_MODE_WORK,
+  SET_DETECTED_WORK,
   SET_ALERT,
   GET_ALERT,
   SET_LIMIT,
   GET_LIMIT,
+  GET_DETECTED_WORK,
 } TypeCommand;
 
 
@@ -139,9 +141,12 @@ struct PacketLedState {
   uint8_t  R;
   uint8_t  G;
   uint8_t  B;
-  #ifdef DETECTED_SENSOR
-    uint8_t ModeWork;
-  #endif
+};
+
+struct PacketModeWork {
+  uint8_t  Packet; 
+  uint8_t  UID;
+  uint8_t ModeWork;
 };
 
 struct PacketDeviceConfig {
@@ -347,6 +352,17 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
 }
 
 #ifdef CONTROLLER_LED
+  void SendPacketModeWork() 
+  {
+    PacketModeWork Packet;
+    Packet.Packet     = DATA_LED_DETECTED_WORK;
+    Packet.UID        = Settings.UID;
+    Packet.ModeWork   = Automode;
+
+    uint16_t DataSize = sizeof(Packet);  // Размер структуры
+    SendPacket((uint8_t*)&Packet, DataSize);
+  }
+
   void SendPacketLedState()
   {
     PacketLedState Packet;
@@ -359,10 +375,6 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
     Packet.R          = r1;
     Packet.G          = g1;  
     Packet.B          = b1;    
-
-    #ifdef DETECTED_SENSOR
-      Packet.ModeWork = Automode;
-    #endif
 
     uint16_t DataSize = sizeof(Packet);  // Размер структуры
     SendPacket((uint8_t*)&Packet, DataSize);
@@ -675,14 +687,21 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             break;
           }
 
-          case SET_MODE_WORK:
+          case SET_DETECTED_WORK:
           {
             uint8_t Mode = ReceivedPacket.CommandData;
-            if (Mode == 1)  Automode = true;
-            else            Automode = false;
+            if (Mode)   Automode = true;
+            else        Automode = false;
 
             Settings.ModeWork = Automode;
             WriteSettings();
+            break;
+          }
+
+          case GET_DETECTED_WORK:
+          {
+            SendPacketModeWork();
+            break;
           }
         #endif
       }

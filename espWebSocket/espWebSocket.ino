@@ -68,7 +68,7 @@ void setup() {
           if (IsDetectedMove) {                           // это по прерыванию с датчика движения
             IsDetectedMove = false;
             if (ReadLight() < 300 || IsWork) {            // тут уровень освещения и если система уже сработала
-              if (!IsWork) Ws2812SetMode(249);
+              if (!IsWork) SetMode(4194270776);
               IsWork = true;
               TimerWork = millis() + 180000;            // Обновил время
             }           
