@@ -17,6 +17,12 @@ void setup() {
     bme.begin(0x76);
   #endif
 
+  #ifdef ENS160Sensor
+    ENS160.begin();
+    ENS160.setPWRMode(ENS160_STANDARD_MODE);
+    ENS160.setTempAndHum(25.0, 30.0);
+  #endif
+  
   #ifdef CONTROLLER_LED
     Ws2812Init();
     Serial.println("Создаю задачу для ленты");
@@ -67,7 +73,8 @@ void setup() {
         if (Automode) {       
           if (IsDetectedMove) {                           // это по прерыванию с датчика движения
             IsDetectedMove = false;
-            if (ReadLight() < 300 || IsWork) {            // тут уровень освещения и если система уже сработала
+            Serial.println(ReadLight());
+            if (ReadLight() < 2000 || IsWork) {            // тут уровень освещения и если система уже сработала
               if (!IsWork) SetMode(4194270776);
               IsWork = true;
               TimerWork = millis() + 180000;            // Обновил время
@@ -112,7 +119,12 @@ void setup() {
     if (CO2Alert) {                             // Если включена тревога и при превышении порогового значения СO2, то будет отправляться пакет с признаком тревоги
       if (millis() > TimerCO2Alert) {
         TimerCO2Alert = millis() + 60000;
-        if (gasSensor.getPPM() > MaxLimitCO2) {
+        #ifdef MQ135Sensor
+          if (gasSensor.getPPM() > MaxLimitCO2) {
+        #endif
+        #ifdef ENS160Sensor
+          if (ENS160.getECO2() > MaxLimitCO2) {
+        #endif    
           Serial.println("Тревога по Co2");
           TimerCO2Alert = millis() + 600000;    // Перевожу время на 10 минут вперед, чтобы не спамить сервер
           SendPacketCO2(false, true);

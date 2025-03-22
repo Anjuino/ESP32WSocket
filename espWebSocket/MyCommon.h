@@ -16,12 +16,12 @@
 WebSocketsClient webSocket;
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР ТЕЛЕМЕТРИИ/////////////////////////////////////////////////////////////
-//#define CONTROLLER_TELEMETRY
-//#define TEMPERATURE_SENSOR
-//#define CO2_SENSOR
+#define CONTROLLER_TELEMETRY
+#define TEMPERATURE_SENSOR
+#define CO2_SENSOR
 //#define PRESSURE_SENSOR
-bool IsTempAndHumSensor = false;
-bool IsCO2Sensor        = false;
+bool IsTempAndHumSensor = true;
+bool IsCO2Sensor        = true;
 bool IsPressureSensor   = false;
 bool IsInaSensor        = false;
 
@@ -33,18 +33,22 @@ bool IsInaSensor        = false;
   #endif
 
   #ifdef CO2_SENSOR  
-    #define MQ135Sensor
+    //#define MQ135Sensor
+    #define ENS160Sensor
     ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
   #endif
 
   #ifdef PRESSURE_SENSOR
-    #define BME280Sensor  
+    //#define BME280Sensor  
   #endif 
 #endif
 
 #ifdef DHT22Sensor
   #include <DHT22.h>
-  #define pinDATA 4 
+  #define pinDATA 4
+  #ifdef ENS160Sensor
+    #define pinDATA 12
+  #endif   
   DHT22 dht22(pinDATA);
 #endif  
 
@@ -54,11 +58,16 @@ bool IsInaSensor        = false;
   Adafruit_BME280 bme;
 #endif
 
+#ifdef ENS160Sensor
+  #include <DFRobot_ENS160.h>
+  DFRobot_ENS160_I2C ENS160(&Wire, 0x53);
+#endif
+
 #ifdef MQ135Sensor
   #include <MQ135.h>
   // Делал калибровку на свежем воздухе
   uint64_t TimerCallibrate = millis() + 60000;
-  MQ135 gasSensor = MQ135(A0, 26.33);
+  Q135 gasSensor = MQ1ta35(A0, 26.33);
   void CallibrateMQ135 ()
   {
     float R = 1.00;
@@ -77,16 +86,15 @@ bool IsInaSensor        = false;
         if (gasSensor.getPPM() > 2500) break; 
       }
     }
-
   }
 #endif
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
-#define CONTROLLER_LED
-#define DETECTED_SENSOR
-#define LIGHT_SENSOR
-bool IsDetectedSensor = true;
-bool IsLightSensor    = true;
+//#define CONTROLLER_LED
+//#define DETECTED_SENSOR
+//#define LIGHT_SENSOR
+bool IsDetectedSensor = false;
+bool IsLightSensor    = false;
 #ifdef CONTROLLER_LED
   #include "Ws2812.h"
   TaskHandle_t Task1;

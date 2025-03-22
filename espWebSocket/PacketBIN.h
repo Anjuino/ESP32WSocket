@@ -235,7 +235,11 @@ void SendPacketCO2(bool IsNeedWriteDataBase = true, bool IsAlarm = false)
     IsSensor = true;
     CO2ppm = gasSensor.getPPM();
   #endif  
-
+  #ifdef ENS160Sensor
+    IsSensor = true;
+    CO2ppm = ENS160.getECO2();
+  #endif
+  
   PacketCO2 Packet;
 
   Packet.Packet              = DATA_CO2ppm;
