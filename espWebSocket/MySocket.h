@@ -1,8 +1,12 @@
+uint64_t TimerToReset = 0;
+bool TimerIsActivated = false;
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // Обработка событий от сервера
   switch(type) {
       case WStype_CONNECTED:
       {
         Serial.println("Connected to server");
+        TimerToReset = 0;
+        TimerIsActivated = false;
         SendPacketStart ();
         delay(500);
         SendPacketDeviceConfig();
@@ -13,6 +17,12 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // О�
       case WStype_DISCONNECTED:
       { 
         Serial.println("Disconnected from server");
+        if (!TimerIsActivated) {
+          TimerToReset = millis() + 600000;
+          TimerIsActivated = true;
+        }
+        if (millis() > TimerToReset) ESP.restart();
+        delay(10);
         break;
       }
 
