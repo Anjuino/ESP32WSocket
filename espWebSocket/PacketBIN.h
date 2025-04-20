@@ -13,6 +13,7 @@ enum {
   ////////////////// Контроллер для светодоидной ленты
   DATA_LED_STATE = 10,
   DATA_LED_DETECTED_WORK = 11,
+  DATA_LED_LIGHT_LIMIT = 12,
   DEVICE_CONFIG  = 20,
   STATE_ALERT = 30,
   DATA_LIMIT_VALUE,
@@ -61,6 +62,8 @@ enum {
   SET_LIMIT,
   GET_LIMIT,
   GET_DETECTED_WORK,
+  SET_LIGHT_LIMIT,
+  GET_LIGHT_LIMIT,
 } TypeCommand;
 
 
@@ -147,6 +150,12 @@ struct PacketModeWork {
   uint8_t  Packet; 
   uint8_t  UID;
   uint8_t ModeWork;
+};
+
+struct PacketLightLimit {
+  uint8_t  Packet; 
+  uint8_t  UID;
+  uint16_t LightLimit;
 };
 
 struct PacketDeviceConfig {
@@ -379,6 +388,17 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
     Packet.R          = r1;
     Packet.G          = g1;  
     Packet.B          = b1;    
+
+    uint16_t DataSize = sizeof(Packet);  // Размер структуры
+    SendPacket((uint8_t*)&Packet, DataSize);
+  }
+  void SendPacketLightLimit() 
+  {
+    PacketLightLimit Packet;
+
+    Packet.Packet     = DATA_LED_LIGHT_LIMIT;
+    Packet.UID        = Settings.UID;
+    Packet.LightLimit = LightLimit;
 
     uint16_t DataSize = sizeof(Packet);  // Размер структуры
     SendPacket((uint8_t*)&Packet, DataSize);
@@ -691,22 +711,41 @@ void ParsePacket(uint8_t * payload, uint64_t length)
             break;
           }
 
-          case SET_DETECTED_WORK:
-          {
-            uint8_t Mode = ReceivedPacket.CommandData;
-            if (Mode)   Automode = true;
-            else        Automode = false;
+          #ifdef DETECTED_SENSOR
+            case SET_DETECTED_WORK:
+            {
+              uint8_t Mode = ReceivedPacket.CommandData;
+              if (Mode)   Automode = true;
+              else        Automode = false;
 
-            Settings.ModeWork = Automode;
-            WriteSettings();
-            break;
-          }
+              Settings.ModeWork = Automode;
+              WriteSettings();
+              break;
+            }
 
-          case GET_DETECTED_WORK:
-          {
-            SendPacketModeWork();
-            break;
-          }
+            case GET_DETECTED_WORK:
+            {
+              SendPacketModeWork();
+              break;
+            }
+          #endif
+
+          #ifdef LIGHT_SENSOR
+            case SET_LIGHT_LIMIT:
+            {
+              uint16_t LightL = ReceivedPacket.CommandData;
+
+              Settings.LightLimit = LightL;
+              WriteSettings();
+              break;
+            }
+
+            case GET_LIGHT_LIMIT:
+            {
+              SendPacketLightLimit();
+              break;
+            }
+          #endif
         #endif
       }
       break;

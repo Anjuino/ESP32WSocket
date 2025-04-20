@@ -16,12 +16,12 @@
 WebSocketsClient webSocket;
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР ТЕЛЕМЕТРИИ/////////////////////////////////////////////////////////////
-#define CONTROLLER_TELEMETRY
-#define TEMPERATURE_SENSOR
-#define CO2_SENSOR
+//#define CONTROLLER_TELEMETRY
+//#define TEMPERATURE_SENSOR
+//#define CO2_SENSOR
 //#define PRESSURE_SENSOR
-bool IsTempAndHumSensor = true;
-bool IsCO2Sensor        = true;
+bool IsTempAndHumSensor = false;
+bool IsCO2Sensor        = false;
 bool IsPressureSensor   = false;
 bool IsInaSensor        = false;
 
@@ -90,11 +90,11 @@ bool IsInaSensor        = false;
 #endif
 
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
-//#define CONTROLLER_LED
-//#define DETECTED_SENSOR
-//#define LIGHT_SENSOR
-bool IsDetectedSensor = false;
-bool IsLightSensor    = false;
+#define CONTROLLER_LED
+#define DETECTED_SENSOR
+#define LIGHT_SENSOR
+bool IsDetectedSensor = true;
+bool IsLightSensor    = true;
 #ifdef CONTROLLER_LED
   #include "Ws2812.h"
   TaskHandle_t Task1;
@@ -111,6 +111,7 @@ bool IsLightSensor    = false;
   #endif
   #ifdef LIGHT_SENSOR
     // ТУТ ДЛЯ ДАТЧИКА ОСВЕЩЕИЯ КОД, СКОРЕЕ ВСЕГО ФУНКЦИЯ
+    uint16_t LightLimit = 300;
     uint16_t ReadLight () {
       return analogRead(2);
     }

@@ -31,6 +31,9 @@ struct DeviceSettings {
     #ifdef DETECTED_SENSOR
       uint8_t ModeWork;
     #endif
+    #ifdef LIGHT_SENSOR
+      uint16_t LightLimit;
+    #endif
     //// ТУТ ДОБАВИТЬ ПОЛЯ ДЛЯ КАК В ПРОЕКТЕ WebLed
   #endif  
 };
@@ -41,7 +44,6 @@ void WriteSettings ()
 {
   EEPROM.put(SETTINGSADDRES, Settings);
   EEPROM.commit();
-  //EEPROM.end();  
 }
 
 void GetSettings ()
@@ -127,10 +129,13 @@ void GetSettings ()
       Automode = Settings.ModeWork;
       Serial.println(Automode);
     #endif
+    #ifdef LIGHT_SENSOR
+      LightLimit = Settings.LightLimit;
+    #endif
   #endif
 
   if (NeedUpdate) {
-    Serial.println("Перезаписываю настройкиииииии");
+    Serial.println("Перезаписываю настройки");
     WriteSettings ();
   }  
 }

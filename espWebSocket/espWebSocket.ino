@@ -73,11 +73,20 @@ void setup() {
         if (Automode) {       
           if (IsDetectedMove) {                           // это по прерыванию с датчика движения
             IsDetectedMove = false;
-            Serial.println(ReadLight());
-            if (ReadLight() < 2000 || IsWork) {            // тут уровень освещения и если система уже сработала
-              if (!IsWork) SetMode(4194270776);
-              IsWork = true;
-              TimerWork = millis() + 180000;            // Обновил время
+            Serial.println("Есть движение");
+            #ifdef LIGHT_SENSOR
+              if (ReadLight() < LightLimit || IsWork) {            // тут уровень освещения и если система уже сработала
+            #else
+              if (IsWork) {
+            #endif
+                if (!IsWork) {
+                  SetMode(4194276895);
+                  Serial.println("Включил");
+                }
+                IsWork = true;
+                TimerWork = millis() + 120000;            // Обновил время
+
+                Serial.println("Обновил время");
             }           
           }
 
@@ -86,6 +95,7 @@ void setup() {
               IsWork = false;
               TimerWork = 0;
               Ws2812SetMode(250);
+              Serial.println("Выключил ленту, сбросил флаги");
             }
           }
         }
@@ -140,7 +150,6 @@ void loop() {
 
   #ifdef CONTROLLER_TELEMETRY
     #ifdef TEMPERATURE_SENSOR
-
       AlertTemp();
       if (millis() > Timer1) {
         Timer1 = millis() + TimerTempAndHum;
@@ -149,7 +158,6 @@ void loop() {
     #endif  
 
     #ifdef CO2_SENSOR
-      
       AlertCO2();
       if (millis() > Timer2) {
         Timer2 = millis() + TimerCO2;
