@@ -27,7 +27,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {    // –û–
       }
 
       case WStype_PING:
-      { 
+      {
+        TimerToReset = 0;
+        TimerIsActivated = false; 
         SendPong();
         break;
       }

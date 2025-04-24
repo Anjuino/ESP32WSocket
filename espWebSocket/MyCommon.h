@@ -20,21 +20,21 @@ WebSocketsClient webSocket;
 //#define TEMPERATURE_SENSOR
 //#define CO2_SENSOR
 //#define PRESSURE_SENSOR
-bool IsTempAndHumSensor = false;
+bool IsTempAndHumSensor = true;
 bool IsCO2Sensor        = false;
-bool IsPressureSensor   = false;
+bool IsPressureSensor   = true;
 bool IsInaSensor        = false;
 
 #ifdef CONTROLLER_TELEMETRY
   #ifdef TEMPERATURE_SENSOR
-    #define DHT22Sensor
+    //#define DHT22Sensor
     //#define BME280Sensor
     ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
   #endif
 
   #ifdef CO2_SENSOR  
     //#define MQ135Sensor
-    #define ENS160Sensor
+    //#define ENS160Sensor
     ////// ТУТ ПО ИДЕЕ МОЖНО ДОБАВЛЯТЬ ЕЩЕ КАКИЕ НИБУДЬ ДАТЧИКИ//////////////////
   #endif
 
@@ -92,9 +92,9 @@ bool IsInaSensor        = false;
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
 #define CONTROLLER_LED
 #define DETECTED_SENSOR
-#define LIGHT_SENSOR
+//#define LIGHT_SENSOR
 bool IsDetectedSensor = true;
-bool IsLightSensor    = true;
+bool IsLightSensor    = false;
 #ifdef CONTROLLER_LED
   #include "Ws2812.h"
   TaskHandle_t Task1;

@@ -392,17 +392,19 @@ void SendPacketTimerSensor(uint32_t TypeSensor)
     uint16_t DataSize = sizeof(Packet);  // Размер структуры
     SendPacket((uint8_t*)&Packet, DataSize);
   }
-  void SendPacketLightLimit() 
-  {
-    PacketLightLimit Packet;
+  #ifdef LIGHT_SENSOR
+    void SendPacketLightLimit() 
+    {
+      PacketLightLimit Packet;
 
-    Packet.Packet     = DATA_LED_LIGHT_LIMIT;
-    Packet.UID        = Settings.UID;
-    Packet.LightLimit = LightLimit;
+      Packet.Packet     = DATA_LED_LIGHT_LIMIT;
+      Packet.UID        = Settings.UID;
+      Packet.LightLimit = LightLimit;
 
-    uint16_t DataSize = sizeof(Packet);  // Размер структуры
-    SendPacket((uint8_t*)&Packet, DataSize);
-  }
+      uint16_t DataSize = sizeof(Packet);  // Размер структуры
+      SendPacket((uint8_t*)&Packet, DataSize);
+    }
+  #endif
 #endif
 
 void SendPacketDeviceConfig()
@@ -717,6 +719,8 @@ void ParsePacket(uint8_t * payload, uint64_t length)
               uint8_t Mode = ReceivedPacket.CommandData;
               if (Mode)   Automode = true;
               else        Automode = false;
+
+              Serial.println(Automode);
 
               Settings.ModeWork = Automode;
               WriteSettings();

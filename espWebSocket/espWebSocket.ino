@@ -70,35 +70,40 @@ void setup() {
       bool IsWork   = false;   // Флаг работы системы
       uint32_t TimerWork;
       for(;;) {
+        delay(0);
         if (Automode) {       
           if (IsDetectedMove) {                           // это по прерыванию с датчика движения
             IsDetectedMove = false;
             Serial.println("Есть движение");
             #ifdef LIGHT_SENSOR
-              if (ReadLight() < LightLimit || IsWork) {            // тут уровень освещения и если система уже сработала
-            #else
-              if (IsWork) {
+            if (ReadLight() < LightLimit || IsWork) {            // тут уровень освещения и если система уже сработала
             #endif
-                if (!IsWork) {
-                  SetMode(4194276895);
-                  Serial.println("Включил");
-                }
-                IsWork = true;
-                TimerWork = millis() + 120000;            // Обновил время
+            //if (IsWork) {
+            //#endif
+              if (!IsWork) {
+                Ws2812SetBlind(120);
+                SetMode(4194263327);
+                Serial.println("Включил");
+              }
+              IsWork = true;
+              TimerWork = millis() + 60000;            // Обновил время
 
-                Serial.println("Обновил время");
-            }           
-          }
+              Serial.println("Обновил время");         
+            #ifdef LIGHT_SENSOR
+            }
+            #endif
 
-          if (IsWork) {
-            if (millis () > TimerWork) {
-              IsWork = false;
-              TimerWork = 0;
-              Ws2812SetMode(250);
-              Serial.println("Выключил ленту, сбросил флаги");
+            if (IsWork) {
+              if (millis () > TimerWork) {
+                IsWork = false;
+                TimerWork = 0;
+                Ws2812SetBlind(50);
+                Ws2812SetMode(250);
+                Serial.println("Выключил ленту, сбросил флаги");
+              }
             }
           }
-        }
+        } else IsWork = false; IsDetectedMove = false;
       }
     }
   #endif
