@@ -131,6 +131,7 @@ void GetSettings ()
     #endif
     #ifdef LIGHT_SENSOR
       LightLimit = Settings.LightLimit;
+      Serial.println(LightLimit);
     #endif
   #endif
 

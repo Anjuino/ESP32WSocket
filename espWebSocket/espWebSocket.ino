@@ -68,13 +68,13 @@ void setup() {
   #ifdef DETECTED_SENSOR
     void TaskDetectedf (void * pvParameters ) {
       bool IsWork   = false;   // Флаг работы системы
-      uint32_t TimerWork;
+      uint64_t TimerWork;
       for(;;) {
         delay(0);
         if (Automode) {       
-          if (IsDetectedMove) {                           // это по прерыванию с датчика движения
+          if (IsDetectedMove) {                                  // это по прерыванию с датчика движения
             IsDetectedMove = false;
-            Serial.println("Есть движение");
+            //Serial.println("Есть движение");
             #ifdef LIGHT_SENSOR
             if (ReadLight() < LightLimit || IsWork) {            // тут уровень освещения и если система уже сработала
             #endif
@@ -83,27 +83,38 @@ void setup() {
               if (!IsWork) {
                 Ws2812SetBlind(120);
                 SetMode(4194263327);
-                Serial.println("Включил");
+                webSocket.sendTXT("Включил подсветку");       // Отправялю пакет на сервер
+                //Serial.println("Включил");
               }
               IsWork = true;
               TimerWork = millis() + 60000;            // Обновил время
 
-              Serial.println("Обновил время");         
+              //Serial.println("Обновил время"); 
+              //Serial.println(TimerWork);        
             #ifdef LIGHT_SENSOR
             }
             #endif
+          }
 
-            if (IsWork) {
-              if (millis () > TimerWork) {
+          if (IsWork) {
+            if (millis () > TimerWork) {
+              if (digitalRead(1) == 0) {
                 IsWork = false;
                 TimerWork = 0;
                 Ws2812SetBlind(50);
                 Ws2812SetMode(250);
-                Serial.println("Выключил ленту, сбросил флаги");
-              }
+                Ws2812SetMode(250);
+                webSocket.sendTXT("Выключил подсветку");       // Отправялю пакет на сервер
+                //Serial.println("Выключил ленту, сбросил флаги");
+              } 
+              else TimerWork = millis() + 15000;
             }
           }
-        } else IsWork = false; IsDetectedMove = false;
+          
+        } else {
+          IsWork = false; 
+          IsDetectedMove = false;
+        }
       }
     }
   #endif

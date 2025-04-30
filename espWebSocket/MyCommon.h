@@ -92,7 +92,7 @@ bool IsInaSensor        = false;
 /////////////////////////////////////////////////////////////КОНТРОЛЛЕР СВЕТА/////////////////////////////////////////////////////////////
 #define CONTROLLER_LED
 #define DETECTED_SENSOR
-//#define LIGHT_SENSOR
+#define LIGHT_SENSOR
 bool IsDetectedSensor = true;
 bool IsLightSensor    = false;
 #ifdef CONTROLLER_LED
